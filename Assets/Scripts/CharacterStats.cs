@@ -9,7 +9,7 @@ public enum StatType
     SpecialAttack
 }
 
-[CreateAssetMenu(fileName = "New Character Data", menuName = "Interfall")]
+[CreateAssetMenu(fileName = "New Character Data", menuName = "Interfall/Character")]
 public class CharacterStats : ScriptableObject
 {
     [Header("Character Info")]
