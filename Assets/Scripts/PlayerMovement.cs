@@ -18,6 +18,8 @@ public class PlayerMovement : MonoBehaviour
     private float lastVerticalInput = 0f;
     private bool isFacingLeft = false;
 
+    public Vector2 lastMoveDirection { get; private set; } = Vector2.down;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -59,16 +61,19 @@ public class PlayerMovement : MonoBehaviour
         {
             lastVerticalInput = 1f;  // Facing up
             lastHorizontalInput = 0f;
+            lastMoveDirection = Vector2.up;
         }
         else if (verticalInput < -0.1f)
         {
             lastVerticalInput = -1f; // Facing down
             lastHorizontalInput = 0f;
+            lastMoveDirection = Vector2.down;
         }
         else if (horizontalInput != 0)
         {
             lastHorizontalInput = horizontalInput;
             lastVerticalInput = 0f;
+            lastMoveDirection = new Vector2(horizontalInput, 0);
         }
     }
 
