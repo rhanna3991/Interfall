@@ -20,6 +20,10 @@ public class PlayerMovement : MonoBehaviour
 
     public Vector2 lastMoveDirection { get; private set; } = Vector2.down;
 
+    // Breadcrumb system
+    public List<Vector3> breadcrumbs = new List<Vector3>();
+    public float minDistance = 0.05f; // Minimum distance between breadcrumbs
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -39,6 +43,7 @@ public class PlayerMovement : MonoBehaviour
         PlayerInput();
         FlipSprite();
         PlayerAnimations();
+        RecordBreadcrumb();
     }
 
     void FixedUpdate()
@@ -57,23 +62,25 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = inputVector.x;
         verticalInput = inputVector.y;
 
-        if (verticalInput > 0.1f)
+        if (inputVector != Vector2.zero)
         {
-            lastVerticalInput = 1f;  // Facing up
-            lastHorizontalInput = 0f;
-            lastMoveDirection = Vector2.up;
-        }
-        else if (verticalInput < -0.1f)
-        {
-            lastVerticalInput = -1f; // Facing down
-            lastHorizontalInput = 0f;
-            lastMoveDirection = Vector2.down;
-        }
-        else if (horizontalInput != 0)
-        {
-            lastHorizontalInput = horizontalInput;
-            lastVerticalInput = 0f;
-            lastMoveDirection = new Vector2(horizontalInput, 0);
+            lastMoveDirection = inputVector;
+            
+            if (verticalInput > 0.1f)
+            {
+                lastVerticalInput = 1f;  // Facing up
+                lastHorizontalInput = 0f;
+            }
+            else if (verticalInput < -0.1f)
+            {
+                lastVerticalInput = -1f; // Facing down
+                lastHorizontalInput = 0f;
+            }
+            else if (horizontalInput != 0)
+            {
+                lastHorizontalInput = horizontalInput;
+                lastVerticalInput = 0f;
+            }
         }
     }
 
@@ -117,6 +124,15 @@ public class PlayerMovement : MonoBehaviour
             // Play ForwardWalk when actively walking down
             bool isWalkingDown = verticalInput < -0.1f;
             animator.SetBool("ForwardWalk", isWalkingDown);
+        }
+    }
+
+    void RecordBreadcrumb()
+    {
+        if (breadcrumbs.Count == 0 || Vector3.Distance(breadcrumbs[0], transform.position) >= minDistance)
+        {
+            breadcrumbs.Insert(0, transform.position);
+            if (breadcrumbs.Count > 200) breadcrumbs.RemoveAt(breadcrumbs.Count - 1);
         }
     }
 }

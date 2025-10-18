@@ -1,15 +1,22 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class FollowPlayer : MonoBehaviour
 {
-    public Transform followCharacter;      // The player or the previous party member
-    public float followDistance = 0.6f;    // Distance to stay behind
-    public float moveSpeed = 4f;           // Movement speed
+    public PlayerMovement leader;
+    public float followDistance = 0.6f;
+    public float moveSpeed = 6f;
+    
+    [Header("Sprite Positioning")]
+    public Vector2 spriteOffset = Vector2.zero;
+    
+    [Header("Movement Smoothing")]
+    public float smoothTime = 0.1f; // How fast to reach target
+    
+    private Vector3 velocity = Vector3.zero; // Makes movement smoother
 
     private SpriteRenderer spriteRenderer;
     private bool isFacingRight = true;
-
-    private Vector2 facingDirection = Vector2.down;
 
     void Start()
     {
@@ -18,34 +25,53 @@ public class FollowPlayer : MonoBehaviour
 
     void Update()
     {
-        if (followCharacter == null) return;
+        if (leader == null || leader.breadcrumbs.Count < 2) return;
 
-        // Try to get facing direction from the player
-        PlayerMovement playerMove = followCharacter.GetComponent<PlayerMovement>();
-        if (playerMove != null)
+        Vector3 target = GetTrailPosition(followDistance, leader.breadcrumbs);
+        
+        // Apply sprite offset to the target position
+        Vector3 offsetTarget = target + new Vector3(spriteOffset.x, spriteOffset.y, 0);
+        
+        transform.position = Vector3.SmoothDamp(transform.position, offsetTarget, ref velocity, smoothTime);
+
+        // Flip sprite based on movement direction
+        Vector3 moveDirection = offsetTarget - transform.position;
+        if (spriteRenderer != null && moveDirection.magnitude > 0.01f)
         {
-            facingDirection = playerMove.lastMoveDirection; // Use the player's facing direction
-        }
-
-        // Compute a position directly behind the player
-        Vector3 targetPosition = followCharacter.position - (Vector3)facingDirection * followDistance;
-
-        // Smoothly move to that position
-        transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-
-        // Flip the sprite based on direction
-        if (spriteRenderer != null)
-        {
-            if (facingDirection.x > 0.1f && !isFacingRight)
+            if (moveDirection.x > 0.05f && !isFacingRight)
             {
                 spriteRenderer.flipX = false;
                 isFacingRight = true;
             }
-            else if (facingDirection.x < -0.1f && isFacingRight)
+            else if (moveDirection.x < -0.05f && isFacingRight)
             {
                 spriteRenderer.flipX = true;
                 isFacingRight = false;
             }
         }
+    }
+
+    // Finds the position on the breadcrumb path exactly distanceBehind units from the leader
+    Vector3 GetTrailPosition(float distanceBehind, List<Vector3> trail)
+    {
+        float accumulatedDistance = 0f;
+
+        for (int i = 0; i < trail.Count - 1; i++)
+        {
+            Vector3 start = trail[i];
+            Vector3 end = trail[i + 1];
+            float segmentLength = Vector3.Distance(start, end);
+            accumulatedDistance += segmentLength;
+
+            if (accumulatedDistance >= distanceBehind)
+            {
+                float overshoot = accumulatedDistance - distanceBehind;
+                float t = 1f - (overshoot / segmentLength);
+                return Vector3.Lerp(end, start, t);
+            }
+        }
+
+        // If not enough trails yet return the last breadcrumb
+        return trail[trail.Count - 1];
     }
 }
