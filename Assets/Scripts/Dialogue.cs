@@ -13,6 +13,9 @@ public class Dialogue : MonoBehaviour
     private PlayerMovement playerMovement;
     private bool isTextComplete = false;
     private Coroutine blinkCoroutine;
+    
+    // Callback for when dialogue completes
+    public System.Action OnDialogueComplete;
 
 
     void Start()
@@ -37,8 +40,29 @@ public class Dialogue : MonoBehaviour
             playerMovement.enabled = false;
         }
 
-        dialogueAnimator.SetTrigger("Entry");
-        yield return new WaitForSeconds(dialogueAnimator.GetCurrentAnimatorStateInfo(0).length);
+        // Check if animator is available and has the Entry trigger
+        if (dialogueAnimator != null && dialogueAnimator.runtimeAnimatorController != null)
+        {
+            try
+            {
+                dialogueAnimator.SetTrigger("Entry");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("Animator trigger 'Entry' not found or animator not properly configured: " + e.Message);
+            }
+            
+            // Wait for animation to complete (outside try-catch)
+            if (dialogueAnimator != null && dialogueAnimator.runtimeAnimatorController != null)
+            {
+                yield return new WaitForSeconds(dialogueAnimator.GetCurrentAnimatorStateInfo(0).length);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Dialogue animator not properly configured. Continuing without animation.");
+        }
+        
         StartCoroutine(TypeLine());
     }
 
@@ -69,12 +93,27 @@ public class Dialogue : MonoBehaviour
         }
         else
         {
-            dialogueAnimator.SetTrigger("Exit");
+            // Try to trigger exit animation if animator is available
+            if (dialogueAnimator != null && dialogueAnimator.runtimeAnimatorController != null)
+            {
+                try
+                {
+                    dialogueAnimator.SetTrigger("Exit");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning("Animator trigger 'Exit' not found: " + e.Message);
+                }
+            }
+            
             // Re-enable player movement when dialogue ends
             if (playerMovement != null)
             {
                 playerMovement.enabled = true;
             }
+            
+            // Trigger callback when dialogue completes
+            OnDialogueComplete?.Invoke();
         }
     }
 
@@ -100,5 +139,20 @@ public class Dialogue : MonoBehaviour
             textComponent.text = lines[index];
             yield return new WaitForSeconds(blinkSpeed);
         }
+    }
+    
+
+    public void SetDialogueLines(string[] newLines)
+    {
+        lines = newLines;
+        index = 0;
+        textComponent.text = string.Empty;
+    }
+    
+    // Method to start dialogue programmatically for battle system
+    public void StartBattleDialogue()
+    {
+        dialogueAnimator = GetComponent<Animator>();
+        StartCoroutine(StartDialogueSequence());
     }
 }

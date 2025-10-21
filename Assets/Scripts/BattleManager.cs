@@ -15,7 +15,12 @@ public class BattleManager : MonoBehaviour
     public int enemyCurrentHP;
     public int enemyMaxHP;
     
+    [Header("UI References")]
     public Button attackButton;
+    public GameObject battleOptions;
+    public GameObject playerCard;
+    public GameObject battleBoxDialogue;
+    public Dialogue dialogueScript;
     
     public Animator[] slashAnimators; // Array to hold multiple slash attack animators
     public GameObject[] slashGameObjects; // Array to hold the slash GameObjects (for show/hide)
@@ -39,11 +44,8 @@ public class BattleManager : MonoBehaviour
         
         HideAllSlashEffects();
         
-        // Log initial enemy HP
-        Debug.Log($"{enemyStats.enemyName} HP: {enemyCurrentHP}/{enemyMaxHP}");
-        
-        // Show initial battle text
-        Debug.Log("A wild " + enemyStats.enemyName + " appears!");
+        // Start battle dialogue sequence
+        StartCoroutine(BattleStartSequence());
     }
     
     public void OnAttackButton()
@@ -148,6 +150,51 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
+    }
+    
+    IEnumerator BattleStartSequence()
+    {
+        // Disable battle UI elements initially
+        if (battleOptions != null)
+            battleOptions.SetActive(false);
+        if (playerCard != null)
+            playerCard.SetActive(false);
+        
+        // Show dialogue box and set up dialogue
+        if (battleBoxDialogue != null && dialogueScript != null && enemyStats != null)
+        {
+            battleBoxDialogue.SetActive(true);
+            
+            // Set up dialogue lines with enemy name
+            string[] dialogueLines = { enemyStats.enemyName + " dares to challenge you!" };
+            dialogueScript.SetDialogueLines(dialogueLines);
+            
+            dialogueScript.OnDialogueComplete = OnDialogueComplete;
+            
+            dialogueScript.StartBattleDialogue();
+        }
+        else
+        {
+            // Fallback if dialogue system isn't available
+            Debug.Log($"{enemyStats.enemyName} dares to challenge you!");
+            yield return new WaitForSeconds(2f);
+            OnDialogueComplete();
+        }
+    }
+    
+    void OnDialogueComplete()
+    {
+        // Hide dialogue box
+        if (battleBoxDialogue != null)
+            battleBoxDialogue.SetActive(false);
+        
+        // Show battle UI elements
+        if (battleOptions != null)
+            battleOptions.SetActive(true);
+        if (playerCard != null)
+            playerCard.SetActive(true);
+        
+        Debug.Log($"{enemyStats.enemyName} HP: {enemyCurrentHP}/{enemyMaxHP}");
     }
     
 }
