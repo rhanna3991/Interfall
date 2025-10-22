@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class BattleManager : MonoBehaviour
@@ -30,7 +31,8 @@ public class BattleManager : MonoBehaviour
     
     public Animator[] slashAnimators; // Array to hold multiple slash attack animators
     public GameObject[] slashGameObjects; // Array to hold the slash GameObjects (for show/hide)
-    public Animator enemyAnimator; 
+    public Animator enemyAnimator;
+    public Animator attackVisualAnimator;
     public int currentPartyMemberIndex = 0; // Which party member is currently attacking
     
     void Start()
@@ -46,6 +48,25 @@ public class BattleManager : MonoBehaviour
         if (attackButton != null)
         {
             attackButton.onClick.AddListener(OnAttackButton);
+            
+            // Add hover events for button animation
+            var eventTrigger = attackButton.GetComponent<EventTrigger>();
+            if (eventTrigger == null)
+            {
+                eventTrigger = attackButton.gameObject.AddComponent<EventTrigger>();
+            }
+            
+            // Pointer enter event
+            var pointerEnter = new EventTrigger.Entry();
+            pointerEnter.eventID = EventTriggerType.PointerEnter;
+            pointerEnter.callback.AddListener((data) => { OnButtonHoverEnter(); });
+            eventTrigger.triggers.Add(pointerEnter);
+            
+            // Pointer exit event
+            var pointerExit = new EventTrigger.Entry();
+            pointerExit.eventID = EventTriggerType.PointerExit;
+            pointerExit.callback.AddListener((data) => { OnButtonHoverExit(); });
+            eventTrigger.triggers.Add(pointerExit);
         }
         
         HideAllSlashEffects();
@@ -67,7 +88,38 @@ public class BattleManager : MonoBehaviour
     
     public void OnAttackButton()
     {
+        StartCoroutine(PlayAttackAnimationThenAttack());
+    }
+    
+    private IEnumerator PlayAttackAnimationThenAttack()
+    {
+        if (attackVisualAnimator != null)
+        {
+            attackVisualAnimator.SetTrigger("Pressed");
+        }
+        
+        // Wait for the animation to finish
+        yield return new WaitForSeconds(0.35f);
+        
         HandlePlayerAttack();
+    }
+    
+    public void OnButtonHoverEnter()
+    {
+        // Play highlighted animation on hover
+        if (attackVisualAnimator != null)
+        {
+            attackVisualAnimator.SetTrigger("Highlighted");
+        }
+    }
+    
+    public void OnButtonHoverExit()
+    {
+        // Return to normal state when hover ends
+        if (attackVisualAnimator != null)
+        {
+            attackVisualAnimator.SetTrigger("Normal");
+        }
     }
     
     void HandlePlayerAttack()
@@ -80,6 +132,15 @@ public class BattleManager : MonoBehaviour
         // Calculate and apply damage
         int damage = CalculatePlayerDamage();
         ApplyDamageToEnemy(damage);
+        
+        // Start delayed damage display
+        StartCoroutine(DelayedDamageDisplay(damage));
+    }
+    
+    IEnumerator DelayedDamageDisplay(int damage)
+    {
+        // Small delay before showing damage dialogue
+        yield return new WaitForSeconds(0.3f);
         
         // Update UI and check battle end
         UpdateBattleUI(damage);
@@ -104,7 +165,7 @@ public class BattleManager : MonoBehaviour
     
     void UpdateBattleUI(int damage)
     {
-        // Disable all button interactions during damage display (keep UI visible to prevent layout issues)
+        // Disable all button interactions during damage display
         if (attackButton != null)
             attackButton.interactable = false;
         if (magicButton != null)
