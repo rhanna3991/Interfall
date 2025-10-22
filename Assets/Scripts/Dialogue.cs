@@ -40,27 +40,11 @@ public class Dialogue : MonoBehaviour
             playerMovement.enabled = false;
         }
 
-        // Check if animator is available and has the Entry trigger
-        if (dialogueAnimator != null && dialogueAnimator.runtimeAnimatorController != null)
+        // Trigger entry animation
+        if (dialogueAnimator != null)
         {
-            try
-            {
-                dialogueAnimator.SetTrigger("Entry");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning("Animator trigger 'Entry' not found or animator not properly configured: " + e.Message);
-            }
-            
-            // Wait for animation to complete (outside try-catch)
-            if (dialogueAnimator != null && dialogueAnimator.runtimeAnimatorController != null)
-            {
-                yield return new WaitForSeconds(dialogueAnimator.GetCurrentAnimatorStateInfo(0).length);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Dialogue animator not properly configured. Continuing without animation.");
+            dialogueAnimator.SetTrigger("Entry");
+            yield return new WaitForSeconds(dialogueAnimator.GetCurrentAnimatorStateInfo(0).length);
         }
         
         StartCoroutine(TypeLine());
@@ -154,5 +138,18 @@ public class Dialogue : MonoBehaviour
     {
         dialogueAnimator = GetComponent<Animator>();
         StartCoroutine(StartDialogueSequence());
+    }
+    
+    // Method for quick battle messages without animations (like damage messages)
+    public void StartQuickDialogue()
+    {
+        dialogueAnimator = GetComponent<Animator>();
+        StartCoroutine(QuickDialogueSequence());
+    }
+    
+    IEnumerator QuickDialogueSequence()
+    {
+        // Skip animations and go straight to typing
+        yield return StartCoroutine(TypeLine());
     }
 }

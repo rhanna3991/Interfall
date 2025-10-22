@@ -17,10 +17,16 @@ public class BattleManager : MonoBehaviour
     
     [Header("UI References")]
     public Button attackButton;
+    public Button magicButton;
+    public Button itemsButton;
+    public Button fleeButton;
     public GameObject battleOptions;
     public GameObject playerCard;
     public GameObject battleBoxDialogue;
     public Dialogue dialogueScript;
+    
+    public Animator battleTransitionAnimator;
+    public GameObject transitionContainer;
     
     public Animator[] slashAnimators; // Array to hold multiple slash attack animators
     public GameObject[] slashGameObjects; // Array to hold the slash GameObjects (for show/hide)
@@ -44,7 +50,18 @@ public class BattleManager : MonoBehaviour
         
         HideAllSlashEffects();
         
-        // Start battle dialogue sequence
+        TransitionSequence();
+    }
+    
+    void TransitionSequence()
+    {
+        // Enable transition container and play battle entry animation
+        if (transitionContainer != null)
+        {
+            transitionContainer.SetActive(true);
+        }
+        
+        // Start battle dialogue sequence immediately
         StartCoroutine(BattleStartSequence());
     }
     
@@ -87,8 +104,51 @@ public class BattleManager : MonoBehaviour
     
     void UpdateBattleUI(int damage)
     {
-        // Show damage text
-        Debug.Log("Dante attacks for " + damage + " damage!");
+        // Disable all button interactions during damage display (keep UI visible to prevent layout issues)
+        if (attackButton != null)
+            attackButton.interactable = false;
+        if (magicButton != null)
+            magicButton.interactable = false;
+        if (itemsButton != null)
+            itemsButton.interactable = false;
+        if (fleeButton != null)
+            fleeButton.interactable = false;
+        if (playerCard != null)
+            playerCard.SetActive(false);
+        
+        // Show damage text in battle dialogue box
+        if (battleBoxDialogue != null && dialogueScript != null && playerStats != null && enemyStats != null)
+        {
+            battleBoxDialogue.SetActive(true);
+            
+            // Create damage message
+            string damageMessage = $"{playerStats.characterName} has dealt {damage} damage to {enemyStats.enemyName}!";
+            string[] dialogueLines = { damageMessage };
+            dialogueScript.SetDialogueLines(dialogueLines);
+            
+            // Set up callback to hide dialogue and restore UI when complete
+            dialogueScript.OnDialogueComplete = () => {
+                if (battleBoxDialogue != null)
+                    battleBoxDialogue.SetActive(false);
+                
+                // Restore battle UI elements
+                if (attackButton != null)
+                    attackButton.interactable = true;
+                if (magicButton != null)
+                    magicButton.interactable = true;
+                if (itemsButton != null)
+                    itemsButton.interactable = true;
+                if (fleeButton != null)
+                    fleeButton.interactable = true;
+                if (playerCard != null)
+                    playerCard.SetActive(true);
+            };
+            
+            dialogueScript.StartQuickDialogue();
+        }
+        
+        // Also log to console for debugging
+        Debug.Log($"{playerStats.characterName} attacks for {damage} damage!");
     }
     
     void CheckBattleEnd()
@@ -165,8 +225,8 @@ public class BattleManager : MonoBehaviour
         {
             battleBoxDialogue.SetActive(true);
             
-            // Set up dialogue lines with enemy name
-            string[] dialogueLines = { enemyStats.enemyName + " dares to challenge you!" };
+            // Set up dialogue lines with enemy name and custom message
+            string[] dialogueLines = { enemyStats.battleStartMessage };
             dialogueScript.SetDialogueLines(dialogueLines);
             
             dialogueScript.OnDialogueComplete = OnDialogueComplete;

@@ -15,6 +15,7 @@ public class EnemyStats : ScriptableObject
     [Header("Enemy Info")]
     public string enemyName;
     public Sprite enemySprite;
+    public string battleStartMessage = "dares to challenge you!";
 
     [Header("Base Stats")]
     public int baseMaxHP = 100;

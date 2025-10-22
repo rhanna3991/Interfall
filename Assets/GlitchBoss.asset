@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: GlitchBoss
   enemySprite: {fileID: -1862963401, guid: 17194b7dab91d4e40802bf65d9de087a, type: 3}
+  battleStartMessage: Glitch Boss has dared to challenge you!
   baseMaxHP: 100
   baseAttack: 10
   baseDefense: 5

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyEncounter : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class EnemyEncounter : MonoBehaviour
     public GameObject transitionContainer;
 
     private PlayerMovement playerMovement;
+    private Animator playerAnimator;
 
 
     void Start()
@@ -16,6 +18,7 @@ public class EnemyEncounter : MonoBehaviour
         if (player != null)
         {
             playerMovement = player.GetComponent<PlayerMovement>();
+            playerAnimator = player.GetComponent<Animator>();
         }
     }
 
@@ -31,9 +34,15 @@ public class EnemyEncounter : MonoBehaviour
     private IEnumerator PlayBattleTransition()
     {
         // Disable player movement
-        /*if (playerMovement != null) {
+        if (playerMovement != null) {
             playerMovement.enabled = false;
-        }*/
+        }
+
+        // Freeze player animation on current frame
+        if (playerAnimator != null)
+        {
+            playerAnimator.enabled = false;
+        }
 
         // Enable the transition container UI
         if (transitionContainer != null)
@@ -49,12 +58,8 @@ public class EnemyEncounter : MonoBehaviour
 
         // Wait for the entry animation to finish
         yield return new WaitForSeconds(transitionDuration);
-
-        // Trigger the battle exit animation
-        if (battleTransitionAnimator != null)
-        {
-            battleTransitionAnimator.SetTrigger("BattleExit");
-        }
+    
+        SceneManager.LoadScene("BattleScene");
     }
 
 
