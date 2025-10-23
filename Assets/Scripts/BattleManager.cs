@@ -33,6 +33,7 @@ public class BattleManager : MonoBehaviour
     public GameObject[] slashGameObjects; // Array to hold the slash GameObjects (for show/hide)
     public Animator enemyAnimator;
     public Animator attackVisualAnimator;
+    public Animator magicVisualAnimator;
     public int currentPartyMemberIndex = 0; // Which party member is currently attacking
     
     void Start()
@@ -59,13 +60,38 @@ public class BattleManager : MonoBehaviour
             // Pointer enter event
             var pointerEnter = new EventTrigger.Entry();
             pointerEnter.eventID = EventTriggerType.PointerEnter;
-            pointerEnter.callback.AddListener((data) => { OnButtonHoverEnter(); });
+            pointerEnter.callback.AddListener((data) => { OnAttackButtonHoverEnter(); });
             eventTrigger.triggers.Add(pointerEnter);
             
             // Pointer exit event
             var pointerExit = new EventTrigger.Entry();
             pointerExit.eventID = EventTriggerType.PointerExit;
-            pointerExit.callback.AddListener((data) => { OnButtonHoverExit(); });
+            pointerExit.callback.AddListener((data) => { OnAttackButtonHoverExit(); });
+            eventTrigger.triggers.Add(pointerExit);
+        }
+        
+        // Set up magic button
+        if (magicButton != null)
+        {
+            magicButton.onClick.AddListener(OnMagicButton);
+            
+            // Add hover events for button animation
+            var eventTrigger = magicButton.GetComponent<EventTrigger>();
+            if (eventTrigger == null)
+            {
+                eventTrigger = magicButton.gameObject.AddComponent<EventTrigger>();
+            }
+            
+            // Pointer enter event
+            var pointerEnter = new EventTrigger.Entry();
+            pointerEnter.eventID = EventTriggerType.PointerEnter;
+            pointerEnter.callback.AddListener((data) => { OnMagicButtonHoverEnter(); });
+            eventTrigger.triggers.Add(pointerEnter);
+            
+            // Pointer exit event
+            var pointerExit = new EventTrigger.Entry();
+            pointerExit.eventID = EventTriggerType.PointerExit;
+            pointerExit.callback.AddListener((data) => { OnMagicButtonHoverExit(); });
             eventTrigger.triggers.Add(pointerExit);
         }
         
@@ -104,21 +130,53 @@ public class BattleManager : MonoBehaviour
         HandlePlayerAttack();
     }
     
-    public void OnButtonHoverEnter()
+    public void OnMagicButton()
     {
-        // Play highlighted animation on hover
+        StartCoroutine(PlayMagicAnimationThenMagic());
+    }
+    
+    private IEnumerator PlayMagicAnimationThenMagic()
+    {
+        if (magicVisualAnimator != null)
+        {
+            magicVisualAnimator.SetTrigger("Pressed");
+        }
+        
+        // Wait for the animation to finish
+        yield return new WaitForSeconds(0.35f);
+        
+  
+    }
+    
+    public void OnAttackButtonHoverEnter()
+    {
         if (attackVisualAnimator != null)
         {
             attackVisualAnimator.SetTrigger("Highlighted");
         }
     }
     
-    public void OnButtonHoverExit()
+    public void OnAttackButtonHoverExit()
     {
-        // Return to normal state when hover ends
         if (attackVisualAnimator != null)
         {
             attackVisualAnimator.SetTrigger("Normal");
+        }
+    }
+    
+    public void OnMagicButtonHoverEnter()
+    {
+        if (magicVisualAnimator != null)
+        {
+            magicVisualAnimator.SetTrigger("Highlighted");
+        }
+    }
+    
+    public void OnMagicButtonHoverExit()
+    {
+        if (magicVisualAnimator != null)
+        {
+            magicVisualAnimator.SetTrigger("Normal");
         }
     }
     
@@ -140,7 +198,7 @@ public class BattleManager : MonoBehaviour
     IEnumerator DelayedDamageDisplay(int damage)
     {
         // Small delay before showing damage dialogue
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.05f);
         
         // Update UI and check battle end
         UpdateBattleUI(damage);

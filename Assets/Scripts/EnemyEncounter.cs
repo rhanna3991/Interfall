@@ -10,6 +10,7 @@ public class EnemyEncounter : MonoBehaviour
 
     private PlayerMovement playerMovement;
     private Animator playerAnimator;
+    private Rigidbody2D playerRigidbody;
 
 
     void Start()
@@ -19,6 +20,7 @@ public class EnemyEncounter : MonoBehaviour
         {
             playerMovement = player.GetComponent<PlayerMovement>();
             playerAnimator = player.GetComponent<Animator>();
+            playerRigidbody = player.GetComponent<Rigidbody2D>();
         }
     }
 
@@ -33,6 +35,12 @@ public class EnemyEncounter : MonoBehaviour
 
     private IEnumerator PlayBattleTransition()
     {
+        // Completely stop player movement
+        if (playerRigidbody != null)
+        {
+            playerRigidbody.velocity = Vector2.zero;
+        }
+        
         // Disable player movement
         if (playerMovement != null) {
             playerMovement.enabled = false;

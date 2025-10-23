@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8a35c38d923aa844e8b6185572f6870d
+guid: 691ac2073422aa949921e64c1719d371
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: testbluetile_0
+      name: StatsPanel_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 96
-        width: 32
-        height: 32
+        x: 5
+        y: 29
+        width: 76
+        height: 58
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,8 +124,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 26583d6af57148148bb1a3fda559e9fd
-      internalID: 453433951
+      spriteID: 369cee153e352804daa751608b1b636e
+      internalID: 1047037277
       vertices: []
       indices: 
       edges: []
@@ -141,7 +141,7 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      testbluetile_0: 453433951
+      StatsPanel_0: 1047037277
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
