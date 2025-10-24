@@ -13,15 +13,24 @@ public class BattleManager : MonoBehaviour
     public int enemyCurrentHP;
     public int enemyMaxHP;
     
+    [Header("UI References")]
+    public MagicMenu magicMenuUI;
+    
     public int currentPartyMemberIndex = 0; // Which party member is currently attacking
     
     // Reference to UIBattleManager for communication
     private UIBattleManager uiBattleManager;
     
+    // Unlocked abilities system
+    public List<LearnableAbility> unlockedAbilities = new List<LearnableAbility>();
+    
     void Start()
     {
         // Get reference to UIBattleManager
         uiBattleManager = FindObjectOfType<UIBattleManager>();
+        
+        // Initialize unlocked abilities FIRST
+        InitializeUnlockedAbilities();
         
         // Initialize enemy HP
         if (enemyStats != null)
@@ -40,6 +49,13 @@ public class BattleManager : MonoBehaviour
         if (uiBattleManager != null)
         {
             uiBattleManager.TransitionSequence();
+        }
+        
+        // Populate magic menu with unlocked abilities right away
+        if (magicMenuUI != null)
+        {
+            magicMenuUI.Populate(unlockedAbilities);
+            Debug.Log($"Magic Menu populated at battle start with {unlockedAbilities.Count} abilities.");
         }
         
         // Start battle dialogue sequence
@@ -124,6 +140,23 @@ public class BattleManager : MonoBehaviour
         }
         
         Debug.Log($"{enemyStats.enemyName} HP: {enemyCurrentHP}/{enemyMaxHP}");
+    }
+    
+    // Initializes the list of unlocked abilities for the player
+    void InitializeUnlockedAbilities()
+    {
+        unlockedAbilities.Clear();
+
+        if (playerStats != null && playerStats.characterAbilities != null)
+        {
+            foreach (var ability in playerStats.characterAbilities)
+            {
+                if (playerLevel >= ability.unlockLevel)
+                    unlockedAbilities.Add(ability);
+            }
+        }
+
+        Debug.Log($"Unlocked {unlockedAbilities.Count} abilities.");
     }
     
 }

@@ -1,4 +1,15 @@
 using UnityEngine;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class LearnableAbility
+{
+    public string abilityName;
+    public string abilityDescription;
+    public int manaCost;
+    public int baseDamage;
+    public int unlockLevel;
+}
 
 public enum StatType
 {
@@ -29,6 +40,9 @@ public class CharacterStats : ScriptableObject
     public float defenseGrowth = 1f;
     public float speedGrowth = 1f;
     public float specialAttackGrowth = 2f;
+    
+    [Header("Abilities")]
+    public List<LearnableAbility> characterAbilities;
 
     public int GetStatAtLevel(StatType statType, int level)
     {
@@ -49,6 +63,41 @@ public class CharacterStats : ScriptableObject
             default:
                 return 0;
         }
+    }
+    
+    // Get an ability that is unlocked at a given level
+    public List<LearnableAbility> GetUnlockedAbilities(int playerLevel)
+    {
+        List<LearnableAbility> unlocked = new List<LearnableAbility>();
+        
+        if (characterAbilities != null)
+        {
+            foreach (var ability in characterAbilities)
+            {
+                if (playerLevel >= ability.unlockLevel)
+                {
+                    unlocked.Add(ability);
+                }
+            }
+        }
+        
+        return unlocked;
+    }
+    
+    // Check if a specific ability is unlocked at a given level
+    public bool IsAbilityUnlocked(string abilityName, int playerLevel)
+    {
+        if (characterAbilities != null)
+        {
+            foreach (var ability in characterAbilities)
+            {
+                if (ability.abilityName == abilityName && playerLevel >= ability.unlockLevel)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 

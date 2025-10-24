@@ -16,30 +16,28 @@ public class TransitionUI : MonoBehaviour
 
     [Header("Animator Reference")]
     public Animator uiAnimator;
+    
+    [Header("Magic Menu")]
+    public MagicMenu magicMenuUI;
+    public CharacterStats playerStats;
 
     private UIBattleManager uiBattleManager;
 
     void Start()
     {
         uiBattleManager = FindObjectOfType<UIBattleManager>();
-        
-        // Hide magic menu initially
+
         if (magicMenu != null)
-        {
             magicMenu.SetActive(false);
-        }
     }
-    
+
     void Update()
     {
         // Check for A key or left arrow to go back to main menu
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        if ((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            && magicMenu != null && magicMenu.activeInHierarchy)
         {
-            // Only trigger if we're currently in magic menu
-            if (magicMenu != null && magicMenu.activeInHierarchy)
-            {
-                StartMagicToMainTransition();
-            }
+            StartMagicToMainTransition();
         }
     }
 
@@ -55,7 +53,7 @@ public class TransitionUI : MonoBehaviour
             Debug.LogError("No Animator assigned to TransitionUI!");
         }
     }
-    
+
     public void StartMagicToMainTransition()
     {
         if (uiAnimator != null)
@@ -69,35 +67,23 @@ public class TransitionUI : MonoBehaviour
         }
     }
 
-    public void LockInputs()
-    {
-        SetButtonState(false);
-        Debug.Log("Inputs locked");
-    }
-
-    public void UnlockMagicInputs()
-    {
-        SetButtonState(true);
-        Debug.Log("Magic menu inputs unlocked");
-    }
-    
-
     public void ActivateMagicMenu()
     {
-        magicMenu.SetActive(true);
+        if (magicMenu != null)
+            magicMenu.SetActive(true);
     }
-    
-    public void UnlockMainInputs()
+
+    public void DeactivateMagicMenu()
     {
-        SetButtonState(true);
-        Debug.Log("Main menu inputs unlocked");
+        if (magicMenu != null)
+            magicMenu.SetActive(false);
     }
 
     private void SetButtonState(bool interactable)
     {
-        attackButton.interactable = interactable;
-        magicButton.interactable = interactable;
-        itemsButton.interactable = interactable;
-        fleeButton.interactable = interactable;
+        if (attackButton) attackButton.interactable = interactable;
+        if (magicButton) magicButton.interactable = interactable;
+        if (itemsButton) itemsButton.interactable = interactable;
+        if (fleeButton) fleeButton.interactable = interactable;
     }
 }

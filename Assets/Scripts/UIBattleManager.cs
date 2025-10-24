@@ -30,8 +30,14 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private Animator fleeVisualAnimator;
     
     [Header("Animation Timings")]
-    [SerializeField] private float buttonAnimationDuration = 0.35f;
+    [SerializeField] private float defaultButtonAnimationDuration = 0.35f;
+    [SerializeField] private float magicButtonAnimationDuration = 0.15f;
     [SerializeField] private float fallbackBattleStartDelay = 2f;
+    [SerializeField] private float attackCooldownDuration = 1.0f; // Cooldown between attacks
+    
+    // Button spam prevention
+    private bool isAttackInProgress = false;
+    private bool isAnyActionInProgress = false;
     
     // Animation trigger/state constants
     private const string ANIM_PRESSED = "Pressed";
@@ -105,9 +111,28 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnAttackButton()
     {
+        // Prevent spam clicking during attack or any other action
+        if (isAttackInProgress || isAnyActionInProgress)
+        {
+            Debug.Log("Attack button clicked but action already in progress - ignoring spam click");
+            return;
+        }
+        
+        // Mark attack as in progress
+        isAttackInProgress = true;
+        isAnyActionInProgress = true;
+        
+        // Disable all buttons during attack
+        SetButtonsInteractable(false);
+        
         StartCoroutine(PlayButtonAnimationThenExecute(
             attackVisualAnimator, 
-            () => battleManager?.HandlePlayerAttack()
+            defaultButtonAnimationDuration,
+            () => {
+                battleManager?.HandlePlayerAttack();
+                // Start cooldown after attack
+                StartCoroutine(AttackCooldown());
+            }
         ));
     }
     
@@ -115,6 +140,7 @@ public class UIBattleManager : MonoBehaviour
     {
         StartCoroutine(PlayButtonAnimationThenExecute(
             magicVisualAnimator, 
+            magicButtonAnimationDuration,
             () => { 
                 if (transitionUI != null)
                 {
@@ -132,6 +158,7 @@ public class UIBattleManager : MonoBehaviour
     {
         StartCoroutine(PlayButtonAnimationThenExecute(
             itemsVisualAnimator, 
+            defaultButtonAnimationDuration,
             () => { 
                 // TODO: Implement items system
                 Debug.Log("Items button clicked - not implemented yet");
@@ -143,6 +170,7 @@ public class UIBattleManager : MonoBehaviour
     {
         StartCoroutine(PlayButtonAnimationThenExecute(
             fleeVisualAnimator, 
+            defaultButtonAnimationDuration,
             () => { 
                 // TODO: Implement flee system
                 Debug.Log("Flee button clicked - not implemented yet");
@@ -151,14 +179,25 @@ public class UIBattleManager : MonoBehaviour
     }
     
     // Play button animation then execute callback
-    private IEnumerator PlayButtonAnimationThenExecute(Animator animator, Action onComplete)
+    private IEnumerator PlayButtonAnimationThenExecute(Animator animator, float duration, Action onComplete)
     {
         TriggerAnimation(animator, ANIM_PRESSED);
         
         // Wait for the animation to finish
-        yield return new WaitForSeconds(buttonAnimationDuration);
+        yield return new WaitForSeconds(duration);
         
         onComplete?.Invoke();
+    }
+    
+    // Attack cooldown to prevent rapid successive attacks
+    private IEnumerator AttackCooldown()
+    {
+        yield return new WaitForSeconds(attackCooldownDuration);
+        isAttackInProgress = false;
+        isAnyActionInProgress = false;
+        
+        // Re-enable buttons after cooldown
+        SetButtonsInteractable(true);
     }
     
     // Button hover events
