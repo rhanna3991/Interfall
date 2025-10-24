@@ -26,6 +26,8 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private Animator enemyAnimator;
     [SerializeField] private Animator attackVisualAnimator;
     [SerializeField] private Animator magicVisualAnimator;
+    [SerializeField] private Animator itemsVisualAnimator;
+    [SerializeField] private Animator fleeVisualAnimator;
     
     [Header("Animation Timings")]
     [SerializeField] private float buttonAnimationDuration = 0.35f;
@@ -40,6 +42,10 @@ public class UIBattleManager : MonoBehaviour
     
     // Reference to BattleManager for communication
     [SerializeField] private BattleManager battleManager;
+    
+    // Reference to TransitionUI for animation events
+    [SerializeField] private TransitionUI transitionUI;
+    
     private Button[] allBattleButtons;
     
     void Awake()
@@ -65,7 +71,8 @@ public class UIBattleManager : MonoBehaviour
         // Set up buttons using helper method
         SetupButton(attackButton, OnAttackButton, OnAttackButtonHoverEnter, OnAttackButtonHoverExit);
         SetupButton(magicButton, OnMagicButton, OnMagicButtonHoverEnter, OnMagicButtonHoverExit);
-        // Add setup for items and flee buttons here when implemented
+        SetupButton(itemsButton, OnItemsButton, OnItemsButtonHoverEnter, OnItemsButtonHoverExit);
+        SetupButton(fleeButton, OnFleeButton, OnFleeButtonHoverEnter, OnFleeButtonHoverExit);
     }
     
     // Set up buttons for the battle UI
@@ -80,6 +87,7 @@ public class UIBattleManager : MonoBehaviour
 
         button.onClick.AddListener(onClick);
 
+        // Add event triggers to the buttons
         var trigger = button.GetComponent<EventTrigger>() ?? button.gameObject.AddComponent<EventTrigger>();
         AddEventTrigger(trigger, EventTriggerType.PointerEnter, onHoverEnter);
         AddEventTrigger(trigger, EventTriggerType.PointerExit, onHoverExit);
@@ -107,7 +115,38 @@ public class UIBattleManager : MonoBehaviour
     {
         StartCoroutine(PlayButtonAnimationThenExecute(
             magicVisualAnimator, 
-            () => { /* Magic logic here */ }
+            () => { 
+                if (transitionUI != null)
+                {
+                    transitionUI.StartMainToMagicTransition();
+                }
+                else
+                {
+                    Debug.LogWarning("TransitionUI reference not set in UIBattleManager!");
+                }
+            }
+        ));
+    }
+    
+    public void OnItemsButton()
+    {
+        StartCoroutine(PlayButtonAnimationThenExecute(
+            itemsVisualAnimator, 
+            () => { 
+                // TODO: Implement items system
+                Debug.Log("Items button clicked - not implemented yet");
+            }
+        ));
+    }
+    
+    public void OnFleeButton()
+    {
+        StartCoroutine(PlayButtonAnimationThenExecute(
+            fleeVisualAnimator, 
+            () => { 
+                // TODO: Implement flee system
+                Debug.Log("Flee button clicked - not implemented yet");
+            }
         ));
     }
     
@@ -122,10 +161,16 @@ public class UIBattleManager : MonoBehaviour
         onComplete?.Invoke();
     }
     
+    // Button hover events
     public void OnAttackButtonHoverEnter() => SetButtonState(attackVisualAnimator, ANIM_HIGHLIGHTED);
     public void OnAttackButtonHoverExit() => SetButtonState(attackVisualAnimator, ANIM_NORMAL);
     public void OnMagicButtonHoverEnter() => SetButtonState(magicVisualAnimator, ANIM_HIGHLIGHTED);
     public void OnMagicButtonHoverExit() => SetButtonState(magicVisualAnimator, ANIM_NORMAL);
+    
+    public void OnItemsButtonHoverEnter() => SetButtonState(itemsVisualAnimator, ANIM_HIGHLIGHTED);
+    public void OnItemsButtonHoverExit() => SetButtonState(itemsVisualAnimator, ANIM_NORMAL);
+    public void OnFleeButtonHoverEnter() => SetButtonState(fleeVisualAnimator, ANIM_HIGHLIGHTED);
+    public void OnFleeButtonHoverExit() => SetButtonState(fleeVisualAnimator, ANIM_NORMAL);
     
     public void UpdateBattleUI(int damage, CharacterStats playerStats, EnemyStats enemyStats)
     {
@@ -161,6 +206,7 @@ public class UIBattleManager : MonoBehaviour
         dialogueScript.StartQuickDialogue();
     }
     
+    // Set the interactability of all battle buttons
     public void SetButtonsInteractable(bool interactable)
     {
         foreach (var button in allBattleButtons)
@@ -169,6 +215,7 @@ public class UIBattleManager : MonoBehaviour
         }
     }
     
+    // Play the slash animation for the current party member
     public void PlaySlashAnimation(int currentPartyMemberIndex)
     {
         // Check if we have slash animators and current index is valid
@@ -247,6 +294,7 @@ public class UIBattleManager : MonoBehaviour
         dialogueScript.StartBattleDialogue();
     }
     
+    // Fallback for when the dialogue system is not available
     private IEnumerator FallbackBattleStart()
     {
         yield return new WaitForSeconds(fallbackBattleStartDelay);
@@ -293,6 +341,7 @@ public class UIBattleManager : MonoBehaviour
                index < slashGameObjects.Length;
     }
     
+    // Set the active state of a game object safely
     private void SetActiveSafe(GameObject obj, bool active)
     {
         if (obj != null && obj.activeSelf != active)
