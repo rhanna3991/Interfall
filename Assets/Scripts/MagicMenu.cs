@@ -10,6 +10,8 @@ public class MagicMenu : MonoBehaviour
     public TMP_Text descriptionText;         // Description box
     public GameObject abilityTextPrefab;     // Prefab for each ability (TMP_Text)
     
+    public AbilityManager abilityManager;    // Reference to the ability manager
+    
     private List<TMP_Text> abilityTexts = new List<TMP_Text>();
     private List<LearnableAbility> abilities = new List<LearnableAbility>();
     private int selectedIndex = 0;
@@ -32,6 +34,11 @@ public class MagicMenu : MonoBehaviour
         {
             selectedIndex = (selectedIndex - 1 + abilities.Count) % abilities.Count;
             UpdateSelection();
+        }
+        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+        {
+            // Cast the selected ability
+            CastSelectedAbility();
         }
 
         // Handle blink effect
@@ -117,5 +124,28 @@ public class MagicMenu : MonoBehaviour
             Destroy(child.gameObject);
         abilityTexts.Clear();
         abilities.Clear();
+    }
+    
+    // Casts the currently selected ability
+    private void CastSelectedAbility()
+    {
+        if (abilities.Count == 0 || selectedIndex < 0 || selectedIndex >= abilities.Count)
+        {
+            Debug.LogWarning("No ability selected or invalid selection!");
+            return;
+        }
+        
+        var selectedAbility = abilities[selectedIndex];
+        
+        if (abilityManager == null)
+        {
+            Debug.LogError("AbilityManager reference not assigned in MagicMenu!");
+            return;
+        }
+        
+        Debug.Log($"Casting {selectedAbility.abilityName}!");
+        
+        // Cast the ability through the ability manager
+        abilityManager.CastAbility(selectedAbility);
     }
 }
