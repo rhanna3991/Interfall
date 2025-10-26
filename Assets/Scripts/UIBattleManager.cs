@@ -17,6 +17,7 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private GameObject playerCard;
     [SerializeField] private GameObject battleBoxDialogue;
     [SerializeField] private Dialogue dialogueScript;
+    [SerializeField] private Slider rightSideBar; // Mana bar slider
     
     [Header("Animation References")]
     [SerializeField] private Animator battleTransitionAnimator;
@@ -439,6 +440,15 @@ public class UIBattleManager : MonoBehaviour
         if (button != null)
         {
             button.interactable = interactable;
+        }
+    }
+    
+    // Update the mana bar slider
+    public void UpdateManaBar(int currentMana, int maxMana)
+    {
+        if (rightSideBar != null && maxMana > 0)
+        {
+            rightSideBar.value = (float)currentMana / maxMana;
         }
     }
 }

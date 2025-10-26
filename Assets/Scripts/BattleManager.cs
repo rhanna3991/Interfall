@@ -7,6 +7,7 @@ public class BattleManager : MonoBehaviour
     [Header("Player Data")]
     public CharacterStats playerStats;
     public int playerLevel = 1;
+    public int playerCurrentMana;
     
     [Header("Enemy Data")]
     public EnemyStats enemyStats;
@@ -35,6 +36,18 @@ public class BattleManager : MonoBehaviour
         
         // Initialize unlocked abilities FIRST
         InitializeUnlockedAbilities();
+        
+        // Initialize player mana
+        if (playerStats != null)
+        {
+            playerCurrentMana = playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel);
+            
+            // Initialize mana bar UI
+            if (uiBattleManager != null)
+            {
+                uiBattleManager.UpdateManaBar(playerCurrentMana, playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel));
+            }
+        }
         
         // Initialize enemy HP
         if (enemyStats != null)
@@ -185,4 +198,25 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"Unlocked {unlockedAbilities.Count} abilities.");
     }
     
+    // Check if player has enough mana to cast an ability
+    public bool CanCastAbility(Ability ability)
+    {
+        if (ability == null) return false;
+        return playerCurrentMana >= ability.manaCost;
+    }
+    
+    // Deduct mana cost from player's current mana
+    public void DeductManaCost(Ability ability)
+    {
+        if (ability == null) return;
+        
+        playerCurrentMana -= ability.manaCost;
+        playerCurrentMana = Mathf.Max(0, playerCurrentMana); // Don't go below 0
+        
+        // Update UI
+        if (uiBattleManager != null)
+        {
+            uiBattleManager.UpdateManaBar(playerCurrentMana, playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel));
+        }
+    }
 }

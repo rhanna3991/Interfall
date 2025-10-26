@@ -17,7 +17,8 @@ public enum StatType
     Attack,
     Defense,
     Speed,
-    SpecialAttack
+    SpecialAttack,
+    MaxMana
 }
 
 [CreateAssetMenu(fileName = "New Character Data", menuName = "Interfall/Character")]
@@ -33,6 +34,7 @@ public class CharacterStats : ScriptableObject
     public int baseDefense = 5;
     public int baseSpeed = 10;
     public int baseSpecialAttack = 10;
+    public int baseMaxMana = 100;
 
     [Header("How much each stat increases per level")]
     public float hpGrowth = 5f;
@@ -40,6 +42,7 @@ public class CharacterStats : ScriptableObject
     public float defenseGrowth = 1f;
     public float speedGrowth = 1f;
     public float specialAttackGrowth = 2f;
+    public float manaGrowth = 10f;
     
     [Header("Abilities")]
     public List<Ability> characterAbilities;
@@ -60,6 +63,8 @@ public class CharacterStats : ScriptableObject
                 return Mathf.RoundToInt(baseSpeed + (speedGrowth * (level - 1)));
             case StatType.SpecialAttack:
                 return Mathf.RoundToInt(baseSpecialAttack + (specialAttackGrowth * (level - 1)));
+            case StatType.MaxMana:
+                return Mathf.RoundToInt(baseMaxMana + (manaGrowth * (level - 1)));
             default:
                 return 0;
         }

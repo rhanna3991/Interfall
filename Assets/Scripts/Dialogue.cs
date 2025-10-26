@@ -117,8 +117,8 @@ public class Dialogue : MonoBehaviour
         {
             currentText += c;
             textComponent.text = currentText;
-            textComponent.ForceMeshUpdate(); // forces TMP to recalc immediately
-            yield return null; // lets Unity render a stable frame
+
+
             yield return new WaitForSeconds(textSpeed);
         }
 
