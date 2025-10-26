@@ -26,6 +26,13 @@ public class Dialogue : MonoBehaviour
             playerMovement = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerMovement>();
 
             dialogueAnimator = GetComponent<Animator>();
+            
+            // Explicitly set text direction to left to right to prevent reversal issues
+            if (textComponent != null)
+            {
+                textComponent.isRightToLeftText = false;
+            }
+            
             textComponent.text = string.Empty;
             index = 0;
             StartCoroutine(StartDialogueSequence());
@@ -103,9 +110,15 @@ public class Dialogue : MonoBehaviour
 
     IEnumerator TypeLine()
     {
-        foreach (char c in lines[index].ToCharArray())
+        string fullText = lines[index];
+        string currentText = string.Empty;
+
+        foreach (char c in fullText.ToCharArray())
         {
-            textComponent.text += c;
+            currentText += c;
+            textComponent.text = currentText;
+            textComponent.ForceMeshUpdate(); // forces TMP to recalc immediately
+            yield return null; // lets Unity render a stable frame
             yield return new WaitForSeconds(textSpeed);
         }
 
@@ -137,6 +150,13 @@ public class Dialogue : MonoBehaviour
     public void StartBattleDialogue()
     {
         dialogueAnimator = GetComponent<Animator>();
+        
+        // Ensure text direction is set correctly
+        if (textComponent != null)
+        {
+            textComponent.isRightToLeftText = false;
+        }
+        
         StartCoroutine(StartDialogueSequence());
     }
     
@@ -144,6 +164,13 @@ public class Dialogue : MonoBehaviour
     public void StartQuickDialogue()
     {
         dialogueAnimator = GetComponent<Animator>();
+        
+        // Ensure text direction is set correctly
+        if (textComponent != null)
+        {
+            textComponent.isRightToLeftText = false;
+        }
+        
         StartCoroutine(QuickDialogueSequence());
     }
     

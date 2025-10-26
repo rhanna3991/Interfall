@@ -52,6 +52,9 @@ public class UIBattleManager : MonoBehaviour
     // Reference to TransitionUI for animation events
     [SerializeField] private TransitionUI transitionUI;
     
+    // Reference to MagicMenu for controlling it
+    [SerializeField] private MagicMenu magicMenu;
+    
     private Button[] allBattleButtons;
     
     void Awake()
@@ -243,6 +246,48 @@ public class UIBattleManager : MonoBehaviour
         };
         
         dialogueScript.StartQuickDialogue();
+    }
+    
+    // Public method to show custom damage dialogue message
+    public void ShowDamageDialogue(string customMessage)
+    {
+        if (!ValidateDialogueSystem()) return;
+        
+        // Hide magic menu if it's active
+        if (transitionUI != null && transitionUI.magicMenu != null && transitionUI.magicMenu.activeSelf)
+        {
+            transitionUI.DeactivateMagicMenu();
+        }
+        
+        // Disable buttons and hide player card during dialogue
+        SetButtonsInteractable(false);
+        SetActiveSafe(playerCard, false);
+        SetActiveSafe(battleBoxDialogue, true);
+        
+        dialogueScript.SetDialogueLines(new[] { customMessage });
+        
+        // Set up callback to hide dialogue and restore UI when complete
+        dialogueScript.OnDialogueComplete = () => {
+            SetActiveSafe(battleBoxDialogue, false);
+            
+            // Always return to the default main menu
+            if (transitionUI != null)
+            {
+                transitionUI.StartDefaultMenuTransition();
+            }
+
+            // Re-enable buttons safely
+            SetButtonsInteractable(true);
+            SetActiveSafe(playerCard, true);
+        };
+        
+        dialogueScript.StartQuickDialogue();
+    }
+    
+    // Returns to main battle options after an action completes
+    private void ReturnToMainBattleOptions()
+    {
+        transitionUI?.StartDefaultMenuTransition();
     }
     
     // Set the interactability of all battle buttons

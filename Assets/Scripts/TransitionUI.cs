@@ -34,43 +34,60 @@ public class TransitionUI : MonoBehaviour
     void Update()
     {
         // Check for A key or left arrow to go back to main menu
+        // Only allow if magic menu is active AND input is enabled in magic menu
         if ((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-            && magicMenu != null && magicMenu.activeInHierarchy)
+            && magicMenu != null && magicMenu.activeInHierarchy
+            && magicMenuUI != null)
         {
+            // Only transition if input is enabled (not during attack)
             StartMagicToMainTransition();
         }
     }
 
     public void StartMainToMagicTransition()
     {
-        if (uiAnimator != null)
-        {
-            uiAnimator.SetTrigger("MainToMagic");
-            Debug.Log("Triggered MainToMagic animation");
-        }
-        else
-        {
-            Debug.LogError("No Animator assigned to TransitionUI!");
-        }
+        if (uiAnimator == null) return;
+        if (magicMenu != null && magicMenu.activeSelf) return; // already in magic
+
+        uiAnimator.ResetTrigger("MagicToMain");
+        uiAnimator.ResetTrigger("DefaultMenu");
+        uiAnimator.SetTrigger("MainToMagic");
     }
 
     public void StartMagicToMainTransition()
     {
-        if (uiAnimator != null)
-        {
-            uiAnimator.SetTrigger("MagicToMain");
-            Debug.Log("Triggered MagicToMain animation");
-        }
-        else
-        {
-            Debug.LogError("No Animator assigned to TransitionUI!");
-        }
+        if (uiAnimator == null) return;
+
+        uiAnimator.ResetTrigger("MainToMagic");
+        uiAnimator.ResetTrigger("DefaultMenu");
+        uiAnimator.SetTrigger("MagicToMain");
+    }
+    
+    public void StartDefaultMenuTransition()
+    {
+        if (uiAnimator == null) return;
+
+        uiAnimator.ResetTrigger("MainToMagic");
+        uiAnimator.ResetTrigger("MagicToMain");
+        uiAnimator.SetTrigger("DefaultMenu");
+
+        // Force the magic menu to close if it's still open
+        if (magicMenu != null && magicMenu.activeSelf)
+            magicMenu.SetActive(false);
     }
 
     public void ActivateMagicMenu()
     {
         if (magicMenu != null)
+        {
             magicMenu.SetActive(true);
+            
+            // Reset the menu state when activating
+            if (magicMenuUI != null)
+            {
+                magicMenuUI.ResetMenu();
+            }
+        }
     }
 
     public void DeactivateMagicMenu()

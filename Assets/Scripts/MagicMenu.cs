@@ -11,18 +11,21 @@ public class MagicMenu : MonoBehaviour
     public GameObject abilityTextPrefab;     // Prefab for each ability (TMP_Text)
     
     public AbilityManager abilityManager;    // Reference to the ability manager
+    public TransitionUI transitionUI;        // Reference to the transition UI manager
     
     private List<TMP_Text> abilityTexts = new List<TMP_Text>();
-    private List<LearnableAbility> abilities = new List<LearnableAbility>();
+    private List<Ability> abilities = new List<Ability>();
     private int selectedIndex = 0;
 
     private float blinkTimer = 0f;
     private bool blinkVisible = true;
     private const float blinkInterval = 0.5f;
+    
+    private bool inputEnabled = true; // Flag to control input
 
     void Update()
     {
-        if (abilities.Count == 0) return;
+        if (abilities.Count == 0 || !inputEnabled) return;
 
         // Handle input
         if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -52,7 +55,7 @@ public class MagicMenu : MonoBehaviour
     }
 
     // Populates the magic menu with the given list of abilities
-    public void Populate(List<LearnableAbility> unlockedAbilities)
+    public void Populate(List<Ability> unlockedAbilities)
     {
         Clear();
 
@@ -129,23 +132,34 @@ public class MagicMenu : MonoBehaviour
     // Casts the currently selected ability
     private void CastSelectedAbility()
     {
-        if (abilities.Count == 0 || selectedIndex < 0 || selectedIndex >= abilities.Count)
-        {
-            Debug.LogWarning("No ability selected or invalid selection!");
-            return;
-        }
-        
-        var selectedAbility = abilities[selectedIndex];
-        
-        if (abilityManager == null)
-        {
-            Debug.LogError("AbilityManager reference not assigned in MagicMenu!");
-            return;
-        }
-        
-        Debug.Log($"Casting {selectedAbility.abilityName}!");
-        
-        // Cast the ability through the ability manager
-        abilityManager.CastAbility(selectedAbility);
+        if (abilities.Count == 0) return;
+
+        DisableInput();
+
+        // Hide immediately
+        transitionUI?.DeactivateMagicMenu();
+
+        // Trigger the ability
+        abilityManager.CastAbility(abilities[selectedIndex]);
+    }
+    
+    // Public method to enable input
+    public void EnableInput()
+    {
+        inputEnabled = true;
+    }
+    
+    // Public method to disable input
+    public void DisableInput()
+    {
+        inputEnabled = false;
+    }
+    
+    // Reset the menu state when re-opening
+    public void ResetMenu()
+    {
+        inputEnabled = true;
+        selectedIndex = 0;
+        UpdateSelection();
     }
 }

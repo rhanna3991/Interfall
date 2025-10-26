@@ -25,13 +25,4 @@ MonoBehaviour:
   speedGrowth: 1
   specialAttackGrowth: 2
   characterAbilities:
-  - abilityName: Fireball
-    abilityDescription: Launches a projectile fireball at an enemy dealing damage
-    manaCost: 10
-    baseDamage: 10
-    unlockLevel: 1
-  - abilityName: Testing
-    abilityDescription: Testing Testing Testing Testing Testing
-    manaCost: 10
-    baseDamage: 10
-    unlockLevel: 1
+  - {fileID: 11400000, guid: cb528f732113e604e915cea452c4fb8e, type: 2}

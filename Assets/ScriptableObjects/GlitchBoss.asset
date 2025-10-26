@@ -17,7 +17,7 @@ MonoBehaviour:
   battleStartMessage: Glitch Boss has dared to challenge you!
   baseMaxHP: 100
   baseAttack: 10
-  baseDefense: 5
+  baseDefense: 0
   baseSpeed: 10
   baseSpecialAttack: 10
   expGiven: 25

@@ -13,6 +13,10 @@ public class BattleManager : MonoBehaviour
     public int enemyCurrentHP;
     public int enemyMaxHP;
     
+    [Header("Projectile Spawns")]
+    public Transform playerProjectileSpawn;
+    public Transform enemyProjectileSpawn;
+    
     [Header("UI References")]
     public MagicMenu magicMenuUI;
     
@@ -22,7 +26,7 @@ public class BattleManager : MonoBehaviour
     private UIBattleManager uiBattleManager;
     
     // Unlocked abilities system
-    public List<LearnableAbility> unlockedAbilities = new List<LearnableAbility>();
+    public List<Ability> unlockedAbilities = new List<Ability>();
     
     void Start()
     {
@@ -55,7 +59,6 @@ public class BattleManager : MonoBehaviour
         if (magicMenuUI != null)
         {
             magicMenuUI.Populate(unlockedAbilities);
-            Debug.Log($"Magic Menu populated at battle start with {unlockedAbilities.Count} abilities.");
         }
         
         // Start battle dialogue sequence
@@ -100,13 +103,36 @@ public class BattleManager : MonoBehaviour
         return Mathf.Max(1, playerAttack - enemyDefense); // Minimum 1 damage
     }
     
-    void ApplyDamageToEnemy(int damage)
+    public void ApplyDamageToEnemy(int damage)
     {
         enemyCurrentHP -= damage;
         enemyCurrentHP = Mathf.Max(0, enemyCurrentHP); // Don't go below 0
+        uiBattleManager?.UpdateBattleUI(damage, playerStats, enemyStats);
+        CheckBattleEnd();
+    }
+    
+    // Method to show custom damage dialogue (for projectile abilities)
+    public void ShowCustomDamageDialogue(int damage, string abilityName)
+    {
+        if (playerStats == null || enemyStats == null) return;
         
-        // Log HP update to console
-        Debug.Log($"{enemyStats.enemyName} HP: {enemyCurrentHP}/{enemyMaxHP}");
+        string damageMessage = $"{playerStats.characterName} has dealt {damage} damage to {enemyStats.enemyName} with {abilityName}!";
+        
+        if (uiBattleManager != null)
+        {
+            // Hide magic menu before showing dialogue
+            if (magicMenuUI != null)
+            {
+                // Get reference to TransitionUI to manage magic menu visibility
+                TransitionUI transitionUI = FindObjectOfType<TransitionUI>();
+                if (transitionUI != null && transitionUI.magicMenu != null)
+                {
+                    transitionUI.magicMenu.SetActive(false);
+                }
+            }
+            
+            uiBattleManager.ShowDamageDialogue(damageMessage);
+        }
     }
     
     

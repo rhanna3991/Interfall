@@ -42,7 +42,7 @@ public class CharacterStats : ScriptableObject
     public float specialAttackGrowth = 2f;
     
     [Header("Abilities")]
-    public List<LearnableAbility> characterAbilities;
+    public List<Ability> characterAbilities;
 
     public int GetStatAtLevel(StatType statType, int level)
     {
@@ -66,9 +66,9 @@ public class CharacterStats : ScriptableObject
     }
     
     // Get an ability that is unlocked at a given level
-    public List<LearnableAbility> GetUnlockedAbilities(int playerLevel)
+    public List<Ability> GetUnlockedAbilities(int playerLevel)
     {
-        List<LearnableAbility> unlocked = new List<LearnableAbility>();
+        List<Ability> unlocked = new List<Ability>();
         
         if (characterAbilities != null)
         {
