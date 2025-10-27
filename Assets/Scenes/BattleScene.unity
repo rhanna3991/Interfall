@@ -370,6 +370,7 @@ MonoBehaviour:
   battleBoxDialogue: {fileID: 1731426125}
   dialogueScript: {fileID: 1731426129}
   rightSideBar: {fileID: 2057642867}
+  leftSideBar: {fileID: 1059187639}
   battleTransitionAnimator: {fileID: 1970929564}
   transitionContainer: {fileID: 1363011520}
   slashAnimators:
@@ -2871,7 +2872,7 @@ Transform:
   m_GameObject: {fileID: 1475242447}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 170.97, y: 235.16, z: -0.68514395}
+  m_LocalPosition: {x: 170.97, y: 235.16, z: -0.6851439}
   m_LocalScale: {x: 6.5, y: 6.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

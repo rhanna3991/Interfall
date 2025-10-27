@@ -124,6 +124,15 @@ public class BattleManager : MonoBehaviour
         CheckBattleEnd();
     }
     
+    // Trigger hitflash on enemy
+    public void TriggerEnemyHitflash()
+    {
+        if (uiBattleManager != null)
+        {
+            uiBattleManager.PlayEnemyHitflash();
+        }
+    }
+    
     // Method to show custom damage dialogue (for projectile abilities)
     public void ShowCustomDamageDialogue(int damage, string abilityName)
     {

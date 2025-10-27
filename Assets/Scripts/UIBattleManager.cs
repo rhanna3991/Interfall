@@ -18,6 +18,7 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private GameObject battleBoxDialogue;
     [SerializeField] private Dialogue dialogueScript;
     [SerializeField] private Slider rightSideBar; // Mana bar slider
+    [SerializeField] private Slider leftSideBar; // Health bar slider
     
     [Header("Animation References")]
     [SerializeField] private Animator battleTransitionAnimator;
@@ -320,6 +321,12 @@ public class UIBattleManager : MonoBehaviour
         }
     }
     
+    // Trigger hitflash on enemy
+    public void PlayEnemyHitflash()
+    {
+        TriggerAnimation(enemyAnimator, ANIM_HIT_FLASH);
+    }
+    
     // Hide all slash effects at the start
     public void HideAllSlashEffects()
     {
@@ -449,6 +456,15 @@ public class UIBattleManager : MonoBehaviour
         if (rightSideBar != null && maxMana > 0)
         {
             rightSideBar.value = (float)currentMana / maxMana;
+        }
+    }
+    
+    // Update the health bar slider
+    public void UpdateHealthBar(int currentHP, int maxHP)
+    {
+        if (leftSideBar != null && maxHP > 0)
+        {
+            leftSideBar.value = (float)currentHP / maxHP;
         }
     }
 }

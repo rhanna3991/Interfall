@@ -8,6 +8,7 @@ public class Projectile : MonoBehaviour
     private int damage = 0;
     private string abilityName = "";
     private BattleManager battleManager;
+    private UIBattleManager uiBattleManager;
     private bool hasHit = false;
     private string enemyTag = "Enemy";
 
@@ -29,6 +30,12 @@ public class Projectile : MonoBehaviour
             // Apply damage to enemy
             if (battleManager != null && damage > 0)
             {
+                // Trigger hitflash animation
+                if (uiBattleManager != null)
+                {
+                    uiBattleManager.PlayEnemyHitflash();
+                }
+                
                 battleManager.ApplyDamageToEnemy(damage);
                 
                 // Show custom dialogue with ability name
@@ -53,5 +60,7 @@ public class Projectile : MonoBehaviour
     public void SetBattleManager(BattleManager bm)
     {
         battleManager = bm;
+        // Also get UIBattleManager reference
+        uiBattleManager = FindObjectOfType<UIBattleManager>();
     }
 }
