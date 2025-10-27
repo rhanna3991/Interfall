@@ -378,6 +378,7 @@ MonoBehaviour:
   slashGameObjects:
   - {fileID: 237406702}
   playerAttackedAnimator: {fileID: 523430202}
+  playerIconAnimator: {fileID: 734676381}
   enemyAnimator: {fileID: 1475242450}
   attackVisualAnimator: {fileID: 1647011803}
   magicVisualAnimator: {fileID: 1745592677}
@@ -2195,7 +2196,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 1417114524}
   m_HandleRect: {fileID: 0}
@@ -3332,6 +3333,8 @@ MonoBehaviour:
   playerStats: {fileID: 11400000, guid: 232645edf6514974b906d7b7cbae2484, type: 2}
   playerLevel: 1
   playerCurrentMana: 0
+  playerCurrentHP: 0
+  playerMaxHP: 0
   enemyStats: {fileID: 11400000, guid: ce274406edfe2304293bc7dd8f90bade, type: 2}
   enemyCurrentHP: 0
   enemyMaxHP: 0
@@ -4488,7 +4491,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 1910291899}
   m_HandleRect: {fileID: 0}

@@ -178,23 +178,20 @@ public class BattleManager : MonoBehaviour
     public void ShowCustomDamageDialogue(int damage, string abilityName)
     {
         if (playerStats == null || enemyStats == null) return;
-        
+
         string damageMessage = $"{playerStats.characterName} has dealt {damage} damage to {enemyStats.enemyName} with {abilityName}!";
-        
+
         if (uiBattleManager != null)
         {
             // Hide magic menu before showing dialogue
             if (magicMenuUI != null)
             {
-                // Get reference to TransitionUI to manage magic menu visibility
                 TransitionUI transitionUI = FindObjectOfType<TransitionUI>();
                 if (transitionUI != null && transitionUI.magicMenu != null)
-                {
                     transitionUI.magicMenu.SetActive(false);
-                }
             }
             
-            uiBattleManager.ShowDamageDialogue(damageMessage);
+            uiBattleManager.ShowMagicDamageDialogue(damageMessage);
         }
     }
     

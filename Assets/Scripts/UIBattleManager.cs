@@ -330,6 +330,37 @@ public class UIBattleManager : MonoBehaviour
         dialogueScript.StartQuickDialogue();
     }
     
+    // Method to show magic damage dialogue
+    public void ShowMagicDamageDialogue(string customMessage)
+    {
+        if (!ValidateDialogueSystem()) return;
+        
+        // Disable buttons and hide player card during dialogue
+        SetButtonsInteractable(false);
+        SetActiveSafe(playerCard, false);
+        SetActiveSafe(battleBoxDialogue, true);
+        
+        dialogueScript.SetDialogueLines(new[] { customMessage });
+        
+        // Set up callback to hide dialogue and restore UI when complete
+        dialogueScript.OnDialogueComplete = () => {
+            SetActiveSafe(battleBoxDialogue, false);
+            
+            // Restore battle UI elements
+            SetButtonsInteractable(true);
+            SetActiveSafe(playerCard, true);
+			
+			// Disable battle options and trigger player's attacked animation at the end of damage dialogue
+			SetActiveSafe(battleOptions, false);
+			TriggerAnimation(playerAttackedAnimator, ANIM_PLAYER_ATTACKED);
+			
+			// Trigger enemy attack animation after player attacked animation
+			StartCoroutine(TriggerEnemyAttackAfterDelay());
+        };
+        
+        dialogueScript.StartQuickDialogue();
+    }
+    
     // Returns to main battle options after an action completes
     private void ReturnToMainBattleOptions()
     {
