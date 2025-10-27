@@ -168,9 +168,9 @@ public class BattleManager : MonoBehaviour
     // Trigger hitflash on enemy
     public void TriggerEnemyHitflash()
     {
-        if (uiBattleManager != null)
+        if (uiBattleManager != null && enemyStats != null)
         {
-            uiBattleManager.PlayEnemyHitflash();
+            uiBattleManager.PlayEnemyHitflash(enemyStats);
         }
     }
     
