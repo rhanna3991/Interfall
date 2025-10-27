@@ -31,9 +31,9 @@ public class Projectile : MonoBehaviour
             if (battleManager != null && damage > 0)
             {
                 // Trigger hitflash animation
-                if (uiBattleManager != null)
+                if (uiBattleManager != null && battleManager.enemyStats != null)
                 {
-                    uiBattleManager.PlayEnemyHitflash();
+                    uiBattleManager.PlayEnemyHitflash(battleManager.enemyStats);
                 }
                 
                 battleManager.ApplyDamageToEnemy(damage);

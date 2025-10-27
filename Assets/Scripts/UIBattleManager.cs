@@ -50,7 +50,6 @@ public class UIBattleManager : MonoBehaviour
     private const string ANIM_FIRE_SLASH = "FireSlash";
     private const string ANIM_HIT_FLASH = "HitFlash";
     private const string ANIM_PLAYER_ATTACKED = "PlayerAttacked";
-    private const string ANIM_ENEMY_ATTACK = "EnemyAttack";
     
     // Reference to BattleManager for communication
     [SerializeField] private BattleManager battleManager;
@@ -255,7 +254,7 @@ public class UIBattleManager : MonoBehaviour
 			TriggerAnimation(playerAttackedAnimator, ANIM_PLAYER_ATTACKED);
 			
 			// Trigger enemy attack animation after player attacked animation
-			StartCoroutine(TriggerEnemyAttackAfterDelay());
+			StartCoroutine(TriggerEnemyAttackAfterDelay(battleManager?.enemyStats));
         };
         
         dialogueScript.StartQuickDialogue();
@@ -355,7 +354,7 @@ public class UIBattleManager : MonoBehaviour
 			TriggerAnimation(playerAttackedAnimator, ANIM_PLAYER_ATTACKED);
 			
 			// Trigger enemy attack animation after player attacked animation
-			StartCoroutine(TriggerEnemyAttackAfterDelay());
+			StartCoroutine(TriggerEnemyAttackAfterDelay(battleManager?.enemyStats));
         };
         
         dialogueScript.StartQuickDialogue();
@@ -396,35 +395,35 @@ public class UIBattleManager : MonoBehaviour
         }
     }
     
-    // Trigger hitflash on enemy
-    public void PlayEnemyHitflash()
+    public void PlayEnemyHitflash(EnemyStats enemyStats)
     {
-        TriggerAnimation(enemyAnimator, ANIM_HIT_FLASH);
+        if (enemyStats == null) return;
+        TriggerAnimation(enemyAnimator, enemyStats.hitFlashTrigger);
     }
     
-    // Trigger enemy attack animation
-    public void TriggerEnemyAttack()
+    public void TriggerEnemyAttack(EnemyStats enemyStats)
     {
-        TriggerAnimation(enemyAnimator, ANIM_ENEMY_ATTACK);
+        if (enemyStats == null) return;
+        TriggerAnimation(enemyAnimator, enemyStats.attackTrigger);
     }
     
-    // Trigger player hit flash animation
     public void TriggerPlayerHitFlash()
     {
         TriggerAnimation(playerIconAnimator, ANIM_HIT_FLASH);
     }
     
     // Coroutine to trigger enemy attack after a delay
-    private IEnumerator TriggerEnemyAttackAfterDelay()
+    private IEnumerator TriggerEnemyAttackAfterDelay(EnemyStats enemyStats)
     {
         // Wait for player attacked animation to complete
         yield return new WaitForSeconds(1.0f);
         
-        // Trigger enemy attack animation
-        TriggerEnemyAttack();
+        // Trigger enemy attack animation using enemy-specific trigger
+        TriggerEnemyAttack(enemyStats);
         
         // Wait for enemy attack animation to complete, then trigger player hit flash and damage
-        yield return new WaitForSeconds(1.0f);
+        float attackDuration = enemyStats != null ? enemyStats.attackAnimationDuration : 1.0f;
+        yield return new WaitForSeconds(attackDuration);
         
         // Trigger player hit flash
         TriggerPlayerHitFlash();
@@ -449,10 +448,12 @@ public class UIBattleManager : MonoBehaviour
     
     private void TriggerAnimation(Animator animator, string triggerName)
     {
-        if (animator != null)
+        if (animator == null || string.IsNullOrEmpty(triggerName)) 
         {
-            animator.SetTrigger(triggerName);
+            Debug.LogWarning($"Cannot trigger animation: animator={animator}, triggerName='{triggerName}'");
+            return;
         }
+        animator.SetTrigger(triggerName);
     }
     
     private void SetButtonState(Animator animator, string state)

@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73856b14ff5f02e46b019adf4873540c, type: 3}
-  m_Name: GlitchBoss
+  m_Name: Pulser
   m_EditorClassIdentifier: 
-  enemyName: GlitchBoss
-  enemySprite: {fileID: -1862963401, guid: 17194b7dab91d4e40802bf65d9de087a, type: 3}
-  battleStartMessage: Glitch Boss has dared to challenge you!
-  baseMaxHP: 100
-  baseAttack: 40
-  baseDefense: 0
-  baseSpeed: 10
+  enemyName: Blue Pulser
+  enemySprite: {fileID: 937167613, guid: 4e4e9425931140142be03ae64ee960d0, type: 3}
+  battleStartMessage: dares to challenge you!
+  baseMaxHP: 35
+  baseAttack: 25
+  baseDefense: 5
+  baseSpeed: 25
   baseSpecialAttack: 10
   expGiven: 25
   goldGiven: 10
   attackTrigger: EnemyAttack
   hitFlashTrigger: HitFlash
   deathTrigger: EnemyDeath
-  attackAnimationDuration: 0.75
+  attackAnimationDuration: 1

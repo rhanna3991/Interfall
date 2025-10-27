@@ -190,7 +190,6 @@ public class BattleManager : MonoBehaviour
                 if (transitionUI != null && transitionUI.magicMenu != null)
                     transitionUI.magicMenu.SetActive(false);
             }
-            
             uiBattleManager.ShowMagicDamageDialogue(damageMessage);
         }
     }

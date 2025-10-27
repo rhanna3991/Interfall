@@ -732,6 +732,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 843616463}
   m_CullTransparentMesh: 1
+--- !u!1 &1136160401
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1136160403}
+  - component: {fileID: 1136160402}
+  m_Layer: 0
+  m_Name: RandomEncounter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1136160402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136160401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b869619125ad55f48bc7e724d0896dc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  encounterChance: 0.5
+  minStepsBetweenEncounters: 10
+  maxStepsBetweenEncounters: 50
+  possibleEnemies:
+  - {fileID: 11400000, guid: d05c697b88da13d468e940954844af8b, type: 2}
+  enemyWeights:
+  - 0
+  playerMovement: {fileID: 166326286}
+  battleTransitionAnimator: {fileID: 499117870}
+  transitionContainer: {fileID: 1889635552}
+--- !u!4 &1136160403
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136160401}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.08912661, y: -1.1939276, z: -9.989674}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1154919832
 GameObject:
   m_ObjectHideFlags: 0
@@ -1744,3 +1798,4 @@ SceneRoots:
   - {fileID: 1785115050}
   - {fileID: 1889635553}
   - {fileID: 1168639859}
+  - {fileID: 1136160403}

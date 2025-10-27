@@ -28,6 +28,11 @@ public class EnemyStats : ScriptableObject
     public int expGiven = 25;
     public int goldGiven = 10;
     
+    [Header("Animation Triggers")]
+    public string attackTrigger = "EnemyAttack";
+    public string hitFlashTrigger = "HitFlash";
+    public string deathTrigger = "EnemyDeath";
+    public float attackAnimationDuration = 1.0f;
 
 }
 
