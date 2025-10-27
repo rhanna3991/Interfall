@@ -25,6 +25,8 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private GameObject transitionContainer;
     [SerializeField] private Animator[] slashAnimators; // Array to hold multiple slash attack animators
     [SerializeField] private GameObject[] slashGameObjects; // Array to hold the slash GameObjects (for show/hide)
+	[SerializeField] private Animator playerAttackedAnimator;
+    [SerializeField] private Animator playerIconAnimator; // For player hit flash
     [SerializeField] private Animator enemyAnimator;
     [SerializeField] private Animator attackVisualAnimator;
     [SerializeField] private Animator magicVisualAnimator;
@@ -47,6 +49,8 @@ public class UIBattleManager : MonoBehaviour
     private const string ANIM_NORMAL = "Normal";
     private const string ANIM_FIRE_SLASH = "FireSlash";
     private const string ANIM_HIT_FLASH = "HitFlash";
+    private const string ANIM_PLAYER_ATTACKED = "PlayerAttacked";
+    private const string ANIM_ENEMY_ATTACK = "EnemyAttack";
     
     // Reference to BattleManager for communication
     [SerializeField] private BattleManager battleManager;
@@ -245,6 +249,13 @@ public class UIBattleManager : MonoBehaviour
             // Restore battle UI elements
             SetButtonsInteractable(true);
             SetActiveSafe(playerCard, true);
+			
+			// Disable battle options and trigger player's attacked animation at the end of damage dialogue
+			SetActiveSafe(battleOptions, false);
+			TriggerAnimation(playerAttackedAnimator, ANIM_PLAYER_ATTACKED);
+			
+			// Trigger enemy attack animation after player attacked animation
+			StartCoroutine(TriggerEnemyAttackAfterDelay());
         };
         
         dialogueScript.StartQuickDialogue();
@@ -281,6 +292,39 @@ public class UIBattleManager : MonoBehaviour
             // Re-enable buttons safely
             SetButtonsInteractable(true);
             SetActiveSafe(playerCard, true);
+        };
+        
+        dialogueScript.StartQuickDialogue();
+    }
+    
+    // Method to show enemy damage dialogue
+    public void ShowEnemyDamageDialogue(int damage, CharacterStats playerStats, EnemyStats enemyStats)
+    {
+        if (!ValidateDialogueSystem()) return;
+        
+        // Hide player card and disable buttons during dialogue
+        SetActiveSafe(playerCard, false);
+        SetButtonsInteractable(false);
+        SetActiveSafe(battleBoxDialogue, true);
+        
+        // Create enemy damage message
+        string damageMessage = $"{enemyStats.enemyName} has dealt {damage} damage to {playerStats.characterName}!";
+        dialogueScript.SetDialogueLines(new[] { damageMessage });
+        
+        // Set up callback to hide dialogue and restore UI when complete
+        dialogueScript.OnDialogueComplete = () => {
+            SetActiveSafe(battleBoxDialogue, false);
+            
+            // Restore battle UI elements
+            SetButtonsInteractable(true);
+            SetActiveSafe(playerCard, true);
+            SetActiveSafe(battleOptions, true);
+            
+            // Return to default menu after enemy damage sequence
+            if (transitionUI != null)
+            {
+                transitionUI.StartDefaultMenuTransition();
+            }
         };
         
         dialogueScript.StartQuickDialogue();
@@ -325,6 +369,40 @@ public class UIBattleManager : MonoBehaviour
     public void PlayEnemyHitflash()
     {
         TriggerAnimation(enemyAnimator, ANIM_HIT_FLASH);
+    }
+    
+    // Trigger enemy attack animation
+    public void TriggerEnemyAttack()
+    {
+        TriggerAnimation(enemyAnimator, ANIM_ENEMY_ATTACK);
+    }
+    
+    // Trigger player hit flash animation
+    public void TriggerPlayerHitFlash()
+    {
+        TriggerAnimation(playerIconAnimator, ANIM_HIT_FLASH);
+    }
+    
+    // Coroutine to trigger enemy attack after a delay
+    private IEnumerator TriggerEnemyAttackAfterDelay()
+    {
+        // Wait for player attacked animation to complete
+        yield return new WaitForSeconds(1.0f);
+        
+        // Trigger enemy attack animation
+        TriggerEnemyAttack();
+        
+        // Wait for enemy attack animation to complete, then trigger player hit flash and damage
+        yield return new WaitForSeconds(1.0f);
+        
+        // Trigger player hit flash
+        TriggerPlayerHitFlash();
+        
+        // Wait a moment to see the hit flash animation before showing dialogue
+        yield return new WaitForSeconds(0.5f);
+        
+        // Handle enemy attack (which will show damage dialogue)
+        battleManager?.HandleEnemyAttack();
     }
     
     // Hide all slash effects at the start

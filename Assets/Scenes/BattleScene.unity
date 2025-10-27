@@ -377,6 +377,7 @@ MonoBehaviour:
   - {fileID: 237406703}
   slashGameObjects:
   - {fileID: 237406702}
+  playerAttackedAnimator: {fileID: 523430202}
   enemyAnimator: {fileID: 1475242450}
   attackVisualAnimator: {fileID: 1647011803}
   magicVisualAnimator: {fileID: 1745592677}
@@ -4650,8 +4651,8 @@ SceneRoots:
   - {fileID: 1430136132}
   - {fileID: 2132791960}
   - {fileID: 237406705}
-  - {fileID: 1724913555}
   - {fileID: 1363011521}
+  - {fileID: 1724913555}
   - {fileID: 1547643165}
   - {fileID: 289710038}
   - {fileID: 1899928718}

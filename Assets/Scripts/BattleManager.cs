@@ -8,6 +8,8 @@ public class BattleManager : MonoBehaviour
     public CharacterStats playerStats;
     public int playerLevel = 1;
     public int playerCurrentMana;
+    public int playerCurrentHP;
+    public int playerMaxHP;
     
     [Header("Enemy Data")]
     public EnemyStats enemyStats;
@@ -37,15 +39,18 @@ public class BattleManager : MonoBehaviour
         // Initialize unlocked abilities FIRST
         InitializeUnlockedAbilities();
         
-        // Initialize player mana
+        // Initialize player mana and HP
         if (playerStats != null)
         {
             playerCurrentMana = playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel);
+            playerMaxHP = playerStats.GetStatAtLevel(StatType.MaxHP, playerLevel);
+            playerCurrentHP = playerMaxHP;
             
-            // Initialize mana bar UI
+            // Initialize UI bars
             if (uiBattleManager != null)
             {
                 uiBattleManager.UpdateManaBar(playerCurrentMana, playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel));
+                uiBattleManager.UpdateHealthBar(playerCurrentHP, playerMaxHP);
             }
         }
         
@@ -96,6 +101,21 @@ public class BattleManager : MonoBehaviour
         StartCoroutine(DelayedDamageDisplay(damage));
     }
     
+    public void HandleEnemyAttack()
+    {
+        if (playerStats == null || enemyStats == null) return;
+        
+        // Calculate and apply damage
+        int damage = CalculateEnemyDamage();
+        ApplyDamageToPlayer(damage);
+        
+        // Show enemy damage dialogue
+        if (uiBattleManager != null)
+        {
+            uiBattleManager.ShowEnemyDamageDialogue(damage, playerStats, enemyStats);
+        }
+    }
+    
     IEnumerator DelayedDamageDisplay(int damage)
     {
         // Small delay before showing damage dialogue
@@ -116,11 +136,32 @@ public class BattleManager : MonoBehaviour
         return Mathf.Max(1, playerAttack - enemyDefense); // Minimum 1 damage
     }
     
+    int CalculateEnemyDamage()
+    {
+        int enemyAttack = enemyStats.baseAttack;
+        int playerDefense = playerStats.GetStatAtLevel(StatType.Defense, playerLevel);
+        return Mathf.Max(1, enemyAttack - playerDefense); // Minimum 1 damage
+    }
+    
     public void ApplyDamageToEnemy(int damage)
     {
         enemyCurrentHP -= damage;
         enemyCurrentHP = Mathf.Max(0, enemyCurrentHP); // Don't go below 0
         uiBattleManager?.UpdateBattleUI(damage, playerStats, enemyStats);
+        CheckBattleEnd();
+    }
+    
+    public void ApplyDamageToPlayer(int damage)
+    {
+        playerCurrentHP -= damage;
+        playerCurrentHP = Mathf.Max(0, playerCurrentHP); // Don't go below 0
+        
+        // Update health bar UI
+        if (uiBattleManager != null)
+        {
+            uiBattleManager.UpdateHealthBar(playerCurrentHP, playerMaxHP);
+        }
+        
         CheckBattleEnd();
     }
     
