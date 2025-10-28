@@ -71,6 +71,7 @@ public class UIBattleManager : MonoBehaviour
     public bool PlayerDefeated { get; private set; }
     private RuntimeEnemy currentEnemyInstance;
     private bool battleInProgress = false;
+    private bool victoryDialogueInProgress = false;
     
     private Button[] allBattleButtons;
     
@@ -367,6 +368,40 @@ public class UIBattleManager : MonoBehaviour
 			
 			// Trigger enemy attack animation after player attacked animation
 			StartCoroutine(TriggerEnemyAttackAfterDelay(battleManager?.enemyStats));
+        };
+        
+        dialogueScript.StartQuickDialogue();
+    }
+    
+    // Method to show victory dialogue when enemy is defeated
+    public void ShowVictoryDialogue(string enemyName, int expGained)
+    {
+        if (!ValidateDialogueSystem()) return;
+        
+        // Set flag to prevent battle from ending immediately
+        victoryDialogueInProgress = true;
+        
+        // Disable buttons and hide player card during dialogue
+        SetButtonsInteractable(false);
+        SetActiveSafe(playerCard, false);
+        SetActiveSafe(battleBoxDialogue, true);
+        
+        // Create victory message and EXP message
+        string victoryMessage = $"You have defeated {enemyName}!";
+        string expMessage = $"{battleManager?.playerStats?.characterName ?? "Player"} has gained {expGained} EXP Points.";
+        
+        // Set up dialogue with both messages
+        dialogueScript.SetDialogueLines(new[] { victoryMessage, expMessage });
+        
+        // Set up callback to hide dialogue and complete battle when player presses input
+        dialogueScript.OnDialogueComplete = () => {
+            SetActiveSafe(battleBoxDialogue, false);
+            
+            // Clear flag to allow battle to end
+            victoryDialogueInProgress = false;
+            
+            // Now that victory dialogue is complete, trigger battle end
+            OnEnemyDefeated();
         };
         
         dialogueScript.StartQuickDialogue();
@@ -677,10 +712,19 @@ public class UIBattleManager : MonoBehaviour
     
     IEnumerator BattleLoop()
     {
-        // Wait until battle ends (enemy defeated or player defeated)
+        // Don't end battle if victory dialogue is still showing
         while (!currentEnemyInstance.IsDefeated() && !PlayerDefeated && battleInProgress)
         {
             yield return null; // Wait one frame
+        }
+        
+        // If enemy is defeated but victory dialogue is showing, wait for it to complete
+        if (currentEnemyInstance.IsDefeated() && victoryDialogueInProgress)
+        {
+            while (victoryDialogueInProgress && battleInProgress)
+            {
+                yield return null; // Wait for victory dialogue to complete
+            }
         }
         
         yield break;

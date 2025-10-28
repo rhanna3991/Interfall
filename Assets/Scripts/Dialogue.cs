@@ -10,51 +10,25 @@ public class Dialogue : MonoBehaviour
     public float blinkSpeed = 0.5f;
     private int index;
     private Animator dialogueAnimator;
-    private PlayerMovement playerMovement;
     private bool isTextComplete = false;
     private Coroutine blinkCoroutine;
     
     // Callback for when dialogue completes
     public System.Action OnDialogueComplete;
 
-
     void Start()
     {
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "SampleScene")
+        // Initialize dialogue system for battlescene
+        dialogueAnimator = GetComponent<Animator>();
+        
+        // Explicitly set text direction to left to right to prevent reversal issues
+        if (textComponent != null)
         {
-            // Get player movement component
-            playerMovement = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerMovement>();
-
-            dialogueAnimator = GetComponent<Animator>();
-            
-            // Explicitly set text direction to left to right to prevent reversal issues
-            if (textComponent != null)
-            {
-                textComponent.isRightToLeftText = false;
-            }
-            
-            textComponent.text = string.Empty;
-            index = 0;
-            StartCoroutine(StartDialogueSequence());
-        }
-    }
-
-    IEnumerator StartDialogueSequence()
-    {
-        // Disable player movement when dialogue starts
-        if (playerMovement != null)
-        {
-            playerMovement.enabled = false;
-        }
-
-        // Trigger entry animation
-        if (dialogueAnimator != null)
-        {
-            dialogueAnimator.SetTrigger("Entry");
-            yield return new WaitForSeconds(dialogueAnimator.GetCurrentAnimatorStateInfo(0).length);
+            textComponent.isRightToLeftText = false;
         }
         
-        StartCoroutine(TypeLine());
+        textComponent.text = string.Empty;
+        index = 0;
     }
 
     void Update()
@@ -95,12 +69,6 @@ public class Dialogue : MonoBehaviour
                 {
                     Debug.LogWarning("Animator trigger 'Exit' not found: " + e.Message);
                 }
-            }
-            
-            // Re-enable player movement when dialogue ends
-            if (playerMovement != null)
-            {
-                playerMovement.enabled = true;
             }
             
             // Trigger callback when dialogue completes
@@ -149,6 +117,7 @@ public class Dialogue : MonoBehaviour
     // Method to start dialogue programmatically for battle system
     public void StartBattleDialogue()
     {
+        
         dialogueAnimator = GetComponent<Animator>();
         
         // Ensure text direction is set correctly
@@ -157,10 +126,10 @@ public class Dialogue : MonoBehaviour
             textComponent.isRightToLeftText = false;
         }
         
-        StartCoroutine(StartDialogueSequence());
+        StartCoroutine(BattleDialogueSequence());
     }
     
-    // Method for quick battle messages without animations (like damage messages)
+    // Method for quick damage messages without animations
     public void StartQuickDialogue()
     {
         dialogueAnimator = GetComponent<Animator>();
@@ -177,6 +146,19 @@ public class Dialogue : MonoBehaviour
     IEnumerator QuickDialogueSequence()
     {
         // Skip animations and go straight to typing
+        yield return StartCoroutine(TypeLine());
+    }
+    
+    IEnumerator BattleDialogueSequence()
+    {
+        // Trigger entry animation
+        if (dialogueAnimator != null)
+        {
+            dialogueAnimator.SetTrigger("Entry");
+            yield return new WaitForSeconds(dialogueAnimator.GetCurrentAnimatorStateInfo(0).length);
+        }
+        
+        // Start typing directly instead of starting another coroutine
         yield return StartCoroutine(TypeLine());
     }
 }

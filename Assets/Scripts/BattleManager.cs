@@ -92,9 +92,6 @@ public class BattleManager : MonoBehaviour
         {
             magicMenuUI.Populate(unlockedAbilities);
         }
-        
-        // Start battle dialogue sequence
-        StartCoroutine(BattleStartSequence());
     }
     
     public void HandlePlayerAttack()
@@ -110,9 +107,6 @@ public class BattleManager : MonoBehaviour
         // Calculate and apply damage
         int damage = CalculatePlayerDamage();
         ApplyDamageToEnemy(damage);
-        
-        // Start delayed damage display
-        StartCoroutine(DelayedDamageDisplay(damage));
     }
     
     public void HandleEnemyAttack()
@@ -128,19 +122,6 @@ public class BattleManager : MonoBehaviour
         {
             uiBattleManager.ShowEnemyDamageDialogue(damage, playerStats, enemyStats);
         }
-    }
-    
-    IEnumerator DelayedDamageDisplay(int damage)
-    {
-        // Small delay before showing damage dialogue
-        yield return new WaitForSeconds(0.05f);
-        
-        // Update UI and check battle end
-        if (uiBattleManager != null)
-        {
-            uiBattleManager.UpdateBattleUI(damage, playerStats, enemyStats);
-        }
-        CheckBattleEnd();
     }
     
     int CalculatePlayerDamage()
@@ -225,18 +206,19 @@ public class BattleManager : MonoBehaviour
         {
             Debug.Log(enemyStats.enemyName + " is defeated!");
             
-            // Give EXP to player
-            if (enemyStats != null && playerUI != null)
+            // Show victory dialogue with EXP message - battle will end when dialogue completes
+            if (uiBattleManager != null && enemyStats != null)
             {
                 int expGained = enemyStats.expGiven;
-                playerUI.GainExp(expGained);
-                Debug.Log($"Gained {expGained} EXP from defeating {enemyStats.enemyName}!");
-            }
-            
-            // Notify UIBattleManager that enemy is defeated
-            if (uiBattleManager != null)
-            {
-                uiBattleManager.OnEnemyDefeated();
+                
+                // Give EXP to player
+                if (playerUI != null)
+                {
+                    playerUI.GainExp(expGained);
+                }
+                
+                // Show victory dialogue with EXP message
+                uiBattleManager.ShowVictoryDialogue(enemyStats.enemyName, expGained);
             }
         }
         
@@ -268,23 +250,6 @@ public class BattleManager : MonoBehaviour
     public void SetCurrentPartyMember(int index)
     {
         currentPartyMemberIndex = index;
-    }
-    
-    IEnumerator BattleStartSequence()
-    {
-        // Start battle sequence through UI manager
-        if (uiBattleManager != null && enemyStats != null)
-        {
-            uiBattleManager.StartBattleSequence(enemyStats);
-        }
-        else
-        {
-            // Fallback if UI system isn't available
-            Debug.Log($"{enemyStats.enemyName} dares to challenge you!");
-            yield return new WaitForSeconds(2f);
-        }
-        
-        Debug.Log($"{enemyStats.enemyName} HP: {enemyCurrentHP}/{enemyMaxHP}");
     }
     
     // Initializes the list of unlocked abilities for the player
