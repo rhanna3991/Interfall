@@ -44,6 +44,10 @@ public class CharacterStats : ScriptableObject
     public float specialAttackGrowth = 2f;
     public float manaGrowth = 10f;
     
+    [Header("EXP System")]
+    public int baseExpRequired = 100;
+    public float expGrowthMultiplier = 1.2f; // Each level requires 20% more EXP
+    
     [Header("Abilities")]
     public List<Ability> characterAbilities;
 
@@ -103,6 +107,27 @@ public class CharacterStats : ScriptableObject
             }
         }
         return false;
+    }
+    
+    // Calculate EXP required for a specific level
+    public int GetExpRequiredForLevel(int level)
+    {
+        level = Mathf.Max(1, level); // Ensure level is at least 1
+        return Mathf.RoundToInt(baseExpRequired * Mathf.Pow(expGrowthMultiplier, level - 1));
+    }
+    
+    // Calculate total EXP needed to reach a specific level from level 1
+    public int GetTotalExpForLevel(int level)
+    {
+        level = Mathf.Max(1, level); // Ensure level is at least 1
+        int totalExp = 0;
+        
+        for (int i = 1; i < level; i++)
+        {
+            totalExp += GetExpRequiredForLevel(i);
+        }
+        
+        return totalExp;
     }
 }
 

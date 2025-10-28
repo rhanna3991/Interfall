@@ -10,6 +10,7 @@ public class BattleManager : MonoBehaviour
     public int playerCurrentMana;
     public int playerCurrentHP;
     public int playerMaxHP;
+    public int playerMaxMP;
     
     [Header("Enemy Data")]
     public EnemyStats enemyStats;
@@ -52,13 +53,14 @@ public class BattleManager : MonoBehaviour
         if (playerStats != null)
         {
             playerCurrentMana = playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel);
+            playerMaxMP = playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel);
             playerMaxHP = playerStats.GetStatAtLevel(StatType.MaxHP, playerLevel);
             playerCurrentHP = playerMaxHP;
             
             // Initialize UI bars
             if (uiBattleManager != null)
             {
-                uiBattleManager.UpdateManaBar(playerCurrentMana, playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel));
+                uiBattleManager.UpdateManaBar(playerCurrentMana, playerMaxMP);
                 uiBattleManager.UpdateHealthBar(playerCurrentHP, playerMaxHP);
             }
             
@@ -222,6 +224,15 @@ public class BattleManager : MonoBehaviour
         if (enemyCurrentHP <= 0)
         {
             Debug.Log(enemyStats.enemyName + " is defeated!");
+            
+            // Give EXP to player
+            if (enemyStats != null && playerUI != null)
+            {
+                int expGained = enemyStats.expGiven;
+                playerUI.GainExp(expGained);
+                Debug.Log($"Gained {expGained} EXP from defeating {enemyStats.enemyName}!");
+            }
+            
             // Notify UIBattleManager that enemy is defeated
             if (uiBattleManager != null)
             {
