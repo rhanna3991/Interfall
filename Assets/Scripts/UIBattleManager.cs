@@ -376,8 +376,6 @@ public class UIBattleManager : MonoBehaviour
     // Method to show victory dialogue when enemy is defeated
     public void ShowVictoryDialogue(string enemyName, int expGained)
     {
-        Debug.Log($"[UI BATTLE MANAGER] ShowVictoryDialogue() called for enemy: {enemyName}, EXP: {expGained}");
-        
         if (!ValidateDialogueSystem()) 
         {
             Debug.LogError("[UI BATTLE MANAGER] ValidateDialogueSystem() returned false - dialogue system not available!");
@@ -386,7 +384,6 @@ public class UIBattleManager : MonoBehaviour
         
         // Set flag to prevent battle from ending immediately
         victoryDialogueInProgress = true;
-        Debug.Log("[VICTORY] Showing victory dialogue");
         
         // Disable buttons and hide player card during dialogue
         SetButtonsInteractable(false);
@@ -407,19 +404,32 @@ public class UIBattleManager : MonoBehaviour
             // Disable battle options while death animation plays
             SetActiveSafe(battleOptions, false);
             
-            // Trigger enemy death animation
-            if (currentEnemyVisual != null && currentEnemyInstance != null)
-            {
-                TriggerAnimation(currentEnemyVisual.animator, currentEnemyInstance.data.deathTrigger);
-            }
-            
-            // Clear flag to allow battle to end
-            victoryDialogueInProgress = false;
-            
-            OnEnemyDefeated();
+            // Start the complete defeat sequence
+            StartCoroutine(CompleteDefeatSequence());
         };
         
         dialogueScript.StartQuickDialogue();
+    }
+    
+    private IEnumerator CompleteDefeatSequence()
+    {
+        // Trigger enemy death animation
+        if (currentEnemyVisual != null && currentEnemyInstance != null)
+        {
+            TriggerAnimation(currentEnemyVisual.animator, currentEnemyInstance.data.deathTrigger);
+            
+            // Wait for death animation to complete
+            float deathDuration = 1f; // Default death animation duration
+            yield return new WaitForSeconds(deathDuration);
+        }
+        
+        // Clear flag to allow battle to end
+        victoryDialogueInProgress = false;
+        
+        // Start stage transition sequence
+        yield return StartCoroutine(StageTransitionSequence());
+        
+        // Battle loop will end automatically when IsDefeated() returns true
     }
     
     // Returns to main battle options after an action completes
@@ -760,8 +770,8 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnEnemyDefeated()
     {
-        // Start stage transition sequence
-        StartCoroutine(StageTransitionSequence());
+        // Battle loop will end automatically when IsDefeated() returns true
+        // All defeat sequence logic is now handled in CompleteDefeatSequence()
     }
     
     private IEnumerator StageTransitionSequence()
@@ -771,10 +781,8 @@ public class UIBattleManager : MonoBehaviour
         {
             TriggerAnimation(battleTransitionAnimator, "StageTransition");
             
-            float animLength = battleTransitionAnimator.GetCurrentAnimatorStateInfo(0).length;
-            
-            // Wait for StageTransition animation to complete
-            yield return new WaitForSeconds(animLength);
+            // Wait longer for StageTransition animation to complete
+            yield return new WaitForSeconds(2.0f);
         }
         
         // Trigger FadeExit animation
@@ -782,10 +790,8 @@ public class UIBattleManager : MonoBehaviour
         {
             TriggerAnimation(battleTransitionAnimator, "FadeExit");
             
-            float animLength = battleTransitionAnimator.GetCurrentAnimatorStateInfo(0).length;
-            
-            // Wait for FadeExit animation to complete
-            yield return new WaitForSeconds(animLength);
+            // Wait longer for FadeExit animation to complete
+            yield return new WaitForSeconds(1.5f);
         }
         
         // Ensure UI returns to default menu state when battle ends

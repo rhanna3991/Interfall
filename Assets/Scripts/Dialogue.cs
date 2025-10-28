@@ -15,6 +15,12 @@ public class Dialogue : MonoBehaviour
     
     // Callback for when dialogue completes
     public System.Action OnDialogueComplete;
+    
+    // Check if dialogue is currently active (showing text)
+    public bool IsDialogueActive()
+    {
+        return gameObject.activeInHierarchy && textComponent != null && !string.IsNullOrEmpty(textComponent.text);
+    }
 
     void Start()
     {
