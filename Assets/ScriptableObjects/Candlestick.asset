@@ -19,10 +19,14 @@ MonoBehaviour:
   baseDefense: 5
   baseSpeed: 10
   baseSpecialAttack: 10
+  baseMaxMana: 100
   hpGrowth: 5
   attackGrowth: 2
   defenseGrowth: 1
   speedGrowth: 1
   specialAttackGrowth: 2
+  manaGrowth: 10
+  baseExpRequired: 100
+  expGrowthMultiplier: 1.2
   characterAbilities:
   - {fileID: 11400000, guid: cb528f732113e604e915cea452c4fb8e, type: 2}

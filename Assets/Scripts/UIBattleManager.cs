@@ -404,11 +404,18 @@ public class UIBattleManager : MonoBehaviour
         dialogueScript.OnDialogueComplete = () => {
             SetActiveSafe(battleBoxDialogue, false);
             
+            // Disable battle options while death animation plays
+            SetActiveSafe(battleOptions, false);
+            
+            // Trigger enemy death animation
+            if (currentEnemyVisual != null && currentEnemyInstance != null)
+            {
+                TriggerAnimation(currentEnemyVisual.animator, currentEnemyInstance.data.deathTrigger);
+            }
+            
             // Clear flag to allow battle to end
             victoryDialogueInProgress = false;
             
-            // Now that victory dialogue is complete, trigger battle end
-            Debug.Log("[VICTORY] Victory dialogue complete");
             OnEnemyDefeated();
         };
         
@@ -566,12 +573,29 @@ public class UIBattleManager : MonoBehaviour
     
     private void ShowBattleStartDialogue(EnemyStats enemyStats)
     {
-        SetActiveSafe(battleBoxDialogue, true);
-        
-        // Set up dialogue lines with enemy name and custom message
+        // Set up dialogue lines first (don't show box yet)
         dialogueScript.SetDialogueLines(new[] { enemyStats.battleStartMessage });
         dialogueScript.OnDialogueComplete = OnBattleDialogueComplete;
-        dialogueScript.StartBattleDialogue();
+        
+        // Start the dialogue sequence - it will show the box when ready
+        StartCoroutine(StartBattleDialogueWithDelayedShow());
+    }
+    
+    private IEnumerator StartBattleDialogueWithDelayedShow()
+    {
+        // Wait for entry animation to complete before showing the box
+        if (dialogueScript != null && dialogueScript.GetComponent<Animator>() != null)
+        {
+            var animator = dialogueScript.GetComponent<Animator>();
+            animator.SetTrigger("Entry");
+            
+            float animLength = animator.GetCurrentAnimatorStateInfo(0).length;
+            yield return new WaitForSeconds(animLength);
+        }
+        
+        // Now show the box and start typing immediately
+        SetActiveSafe(battleBoxDialogue, true);
+        StartCoroutine(dialogueScript.TypeLine());
     }
     
     // Fallback for when the dialogue system is not available
@@ -736,6 +760,34 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnEnemyDefeated()
     {
+        // Start stage transition sequence
+        StartCoroutine(StageTransitionSequence());
+    }
+    
+    private IEnumerator StageTransitionSequence()
+    {
+        // Trigger StageTransition animation
+        if (battleTransitionAnimator != null)
+        {
+            TriggerAnimation(battleTransitionAnimator, "StageTransition");
+            
+            float animLength = battleTransitionAnimator.GetCurrentAnimatorStateInfo(0).length;
+            
+            // Wait for StageTransition animation to complete
+            yield return new WaitForSeconds(animLength);
+        }
+        
+        // Trigger FadeExit animation
+        if (battleTransitionAnimator != null)
+        {
+            TriggerAnimation(battleTransitionAnimator, "FadeExit");
+            
+            float animLength = battleTransitionAnimator.GetCurrentAnimatorStateInfo(0).length;
+            
+            // Wait for FadeExit animation to complete
+            yield return new WaitForSeconds(animLength);
+        }
+        
         // Ensure UI returns to default menu state when battle ends
         if (transitionUI != null)
         {

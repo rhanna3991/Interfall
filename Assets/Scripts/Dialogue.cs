@@ -76,7 +76,7 @@ public class Dialogue : MonoBehaviour
         }
     }
 
-    IEnumerator TypeLine()
+    public IEnumerator TypeLine()
     {
         string fullText = lines[index];
         string currentText = string.Empty;
@@ -85,7 +85,6 @@ public class Dialogue : MonoBehaviour
         {
             currentText += c;
             textComponent.text = currentText;
-
 
             yield return new WaitForSeconds(textSpeed);
         }

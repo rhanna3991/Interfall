@@ -20,9 +20,9 @@ MonoBehaviour:
   scale: {x: 6.5, y: 6.5, z: 1}
   colliderSizeMultiplier: 0.5
   colliderOffset: {x: 0, y: 0}
-  baseMaxHP: 10
+  baseMaxHP: 5
   baseAttack: 10
-  baseDefense: 0
+  baseDefense: 1
   baseSpeed: 10
   baseSpecialAttack: 10
   expGiven: 25
