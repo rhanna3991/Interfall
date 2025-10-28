@@ -15,7 +15,7 @@ MonoBehaviour:
   characterName: Rapharim
   characterSprite: {fileID: -1171570350, guid: 77e75eca19037134da3d53a5704dd69d, type: 3}
   baseMaxHP: 100
-  baseAttack: 10
+  baseAttack: 100
   baseDefense: 5
   baseSpeed: 10
   baseSpecialAttack: 10

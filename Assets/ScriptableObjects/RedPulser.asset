@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73856b14ff5f02e46b019adf4873540c, type: 3}
+  m_Name: RedPulser
+  m_EditorClassIdentifier: 
+  enemyName: Red Pulser
+  enemySprite: {fileID: -1058791776, guid: 09331b7157b967042b8075a012b8d829, type: 3}
+  battleStartMessage: Red Pulser dares to challenge you!
+  description: 
+  stageTier: 1
+  scale: {x: 5, y: 5, z: 1}
+  colliderSizeMultiplier: 1
+  colliderOffset: {x: 0, y: 0}
+  baseMaxHP: 5
+  baseAttack: 25
+  baseDefense: 1
+  baseSpeed: 25
+  baseSpecialAttack: 10
+  expGiven: 25
+  goldGiven: 10
+  attackTrigger: EnemyAttack
+  hitFlashTrigger: HitFlash
+  deathTrigger: EnemyDeath
+  attackAnimationDuration: 1
+  animatorController: {fileID: 9100000, guid: 1aaf6a7a477c31f43a49b4532607f074, type: 2}

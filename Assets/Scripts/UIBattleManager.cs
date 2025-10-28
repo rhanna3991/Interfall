@@ -564,6 +564,9 @@ public class UIBattleManager : MonoBehaviour
             return;
         }
         
+        // Ensure buttons are interactable for new stage
+        SetButtonsInteractable(true);
+        
         // Disable battle UI elements initially
         SetActiveSafe(battleOptions, false);
         SetActiveSafe(playerCard, false);

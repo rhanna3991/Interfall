@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73856b14ff5f02e46b019adf4873540c, type: 3}
-  m_Name: Pulser
+  m_Name: BluePulser
   m_EditorClassIdentifier: 
   enemyName: Blue Pulser
-  enemySprite: {fileID: 937167613, guid: 4e4e9425931140142be03ae64ee960d0, type: 3}
+  enemySprite: {fileID: -774234974, guid: f0659e9830c70634ca235e3de938bd10, type: 3}
   battleStartMessage: Blue Pulser dares to challenge you!
   description: 
   stageTier: 1
@@ -22,7 +22,7 @@ MonoBehaviour:
   colliderOffset: {x: 0, y: 0}
   baseMaxHP: 5
   baseAttack: 25
-  baseDefense: 5
+  baseDefense: 1
   baseSpeed: 25
   baseSpecialAttack: 10
   expGiven: 25
@@ -31,4 +31,4 @@ MonoBehaviour:
   hitFlashTrigger: HitFlash
   deathTrigger: EnemyDeath
   attackAnimationDuration: 1
-  animatorController: {fileID: 0}
+  animatorController: {fileID: 9100000, guid: c383f85317f6bca45b675f2c67cec11f, type: 2}
