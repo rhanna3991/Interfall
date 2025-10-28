@@ -16,6 +16,9 @@ public class BattleManager : MonoBehaviour
     public int enemyCurrentHP;
     public int enemyMaxHP;
     
+    // Runtime enemy instance for current battle
+    private RuntimeEnemy currentRuntimeEnemy;
+    
     [Header("Projectile Spawns")]
     public Transform playerProjectileSpawn;
     public Transform enemyProjectileSpawn;
@@ -28,6 +31,9 @@ public class BattleManager : MonoBehaviour
     // Reference to UIBattleManager for communication
     private UIBattleManager uiBattleManager;
     
+    // Reference to PlayerStatsUI for communication
+    private PlayerUI playerUI;
+    
     // Unlocked abilities system
     public List<Ability> unlockedAbilities = new List<Ability>();
     
@@ -35,6 +41,9 @@ public class BattleManager : MonoBehaviour
     {
         // Get reference to UIBattleManager
         uiBattleManager = FindObjectOfType<UIBattleManager>();
+        
+        // Get reference to PlayerUI
+        playerUI = FindObjectOfType<PlayerUI>();
         
         // Initialize unlocked abilities FIRST
         InitializeUnlockedAbilities();
@@ -52,6 +61,9 @@ public class BattleManager : MonoBehaviour
                 uiBattleManager.UpdateManaBar(playerCurrentMana, playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel));
                 uiBattleManager.UpdateHealthBar(playerCurrentHP, playerMaxHP);
             }
+            
+            // Notify PlayerUI of initial values
+            NotifyPlayerStatsChanged();
         }
         
         // Initialize enemy HP
@@ -132,13 +144,13 @@ public class BattleManager : MonoBehaviour
     int CalculatePlayerDamage()
     {
         int playerAttack = playerStats.GetStatAtLevel(StatType.Attack, playerLevel);
-        int enemyDefense = enemyStats.baseDefense;
+        int enemyDefense = currentRuntimeEnemy != null ? currentRuntimeEnemy.GetDefense() : enemyStats.baseDefense;
         return Mathf.Max(1, playerAttack - enemyDefense); // Minimum 1 damage
     }
     
     int CalculateEnemyDamage()
     {
-        int enemyAttack = enemyStats.baseAttack;
+        int enemyAttack = currentRuntimeEnemy != null ? currentRuntimeEnemy.GetAttack() : enemyStats.baseAttack;
         int playerDefense = playerStats.GetStatAtLevel(StatType.Defense, playerLevel);
         return Mathf.Max(1, enemyAttack - playerDefense); // Minimum 1 damage
     }
@@ -147,6 +159,13 @@ public class BattleManager : MonoBehaviour
     {
         enemyCurrentHP -= damage;
         enemyCurrentHP = Mathf.Max(0, enemyCurrentHP); // Don't go below 0
+        
+        // Update RuntimeEnemy if available
+        if (currentRuntimeEnemy != null)
+        {
+            currentRuntimeEnemy.TakeDamage(damage);
+        }
+        
         uiBattleManager?.UpdateBattleUI(damage, playerStats, enemyStats);
         CheckBattleEnd();
     }
@@ -161,6 +180,9 @@ public class BattleManager : MonoBehaviour
         {
             uiBattleManager.UpdateHealthBar(playerCurrentHP, playerMaxHP);
         }
+        
+        // Notify PlayerUI of HP change
+        NotifyPlayerStatsChanged();
         
         CheckBattleEnd();
     }
@@ -200,6 +222,33 @@ public class BattleManager : MonoBehaviour
         if (enemyCurrentHP <= 0)
         {
             Debug.Log(enemyStats.enemyName + " is defeated!");
+            // Notify UIBattleManager that enemy is defeated
+            if (uiBattleManager != null)
+            {
+                uiBattleManager.OnEnemyDefeated();
+            }
+        }
+        
+        if (playerCurrentHP <= 0)
+        {
+            Debug.Log("Player is defeated!");
+            // Notify UIBattleManager that player is defeated
+            if (uiBattleManager != null)
+            {
+                uiBattleManager.OnPlayerDeath();
+            }
+        }
+    }
+    
+    // Method to set the current RuntimeEnemy
+    public void SetRuntimeEnemy(RuntimeEnemy runtimeEnemy)
+    {
+        currentRuntimeEnemy = runtimeEnemy;
+        if (runtimeEnemy != null)
+        {
+            enemyStats = runtimeEnemy.data;
+            enemyCurrentHP = runtimeEnemy.currentHP;
+            enemyMaxHP = runtimeEnemy.GetMaxHP();
         }
     }
     
@@ -263,6 +312,18 @@ public class BattleManager : MonoBehaviour
         if (uiBattleManager != null)
         {
             uiBattleManager.UpdateManaBar(playerCurrentMana, playerStats.GetStatAtLevel(StatType.MaxMana, playerLevel));
+        }
+        
+        // Notify PlayerUI of MP change
+        NotifyPlayerStatsChanged();
+    }
+    
+    // Method to notify PlayerUI when stats change
+    private void NotifyPlayerStatsChanged()
+    {
+        if (playerUI != null)
+        {
+            playerUI.OnPlayerStatsChanged();
         }
     }
 }

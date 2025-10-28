@@ -12,11 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73856b14ff5f02e46b019adf4873540c, type: 3}
   m_Name: GlitchBoss
   m_EditorClassIdentifier: 
-  enemyName: GlitchBoss
+  enemyName: Glitchster
   enemySprite: {fileID: -1862963401, guid: 17194b7dab91d4e40802bf65d9de087a, type: 3}
-  battleStartMessage: Glitch Boss has dared to challenge you!
-  baseMaxHP: 100
-  baseAttack: 40
+  battleStartMessage: Glitchster has dared to challenge you!
+  description: 
+  stageTier: 1
+  scale: {x: 6.5, y: 6.5, z: 1}
+  colliderSizeMultiplier: 0.5
+  colliderOffset: {x: 0, y: 0}
+  baseMaxHP: 10
+  baseAttack: 10
   baseDefense: 0
   baseSpeed: 10
   baseSpecialAttack: 10
@@ -26,3 +31,4 @@ MonoBehaviour:
   hitFlashTrigger: HitFlash
   deathTrigger: EnemyDeath
   attackAnimationDuration: 0.75
+  animatorController: {fileID: 9100000, guid: fc4c0782179d29549b656d038a6a851f, type: 2}

@@ -20,6 +20,14 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private Slider rightSideBar; // Mana bar slider
     [SerializeField] private Slider leftSideBar; // Health bar slider
     
+    [Header("Enemy References")]
+    [SerializeField] private Transform enemySpawnPoint;
+    [SerializeField] private GameObject enemyPrefab;
+    
+    // Current enemy instance
+    private GameObject currentEnemyObject;
+    private EnemyVisual currentEnemyVisual;
+    
     [Header("Animation References")]
     [SerializeField] private Animator battleTransitionAnimator;
     [SerializeField] private GameObject transitionContainer;
@@ -27,7 +35,6 @@ public class UIBattleManager : MonoBehaviour
     [SerializeField] private GameObject[] slashGameObjects; // Array to hold the slash GameObjects (for show/hide)
 	[SerializeField] private Animator playerAttackedAnimator;
     [SerializeField] private Animator playerIconAnimator; // For player hit flash
-    [SerializeField] private Animator enemyAnimator;
     [SerializeField] private Animator attackVisualAnimator;
     [SerializeField] private Animator magicVisualAnimator;
     [SerializeField] private Animator itemsVisualAnimator;
@@ -59,6 +66,11 @@ public class UIBattleManager : MonoBehaviour
     
     // Reference to MagicMenu for controlling it
     [SerializeField] private MagicMenu magicMenu;
+    
+    // StageController support
+    public bool PlayerDefeated { get; private set; }
+    private RuntimeEnemy currentEnemyInstance;
+    private bool battleInProgress = false;
     
     private Button[] allBattleButtons;
     
@@ -390,21 +402,24 @@ public class UIBattleManager : MonoBehaviour
             slashObject.SetActive(true);
             TriggerAnimation(slashAnimator, ANIM_FIRE_SLASH);
             
-            // Trigger enemy hit flash
-            TriggerAnimation(enemyAnimator, ANIM_HIT_FLASH);
+            // Trigger enemy hit flash with a small delay to avoid conflicts
+            if (currentEnemyInstance != null && currentEnemyVisual != null)
+            {
+                StartCoroutine(TriggerHitflashDelayed(0.1f));
+            }
         }
     }
     
     public void PlayEnemyHitflash(EnemyStats enemyStats)
     {
-        if (enemyStats == null) return;
-        TriggerAnimation(enemyAnimator, enemyStats.hitFlashTrigger);
+        if (enemyStats == null || currentEnemyVisual == null) return;
+        TriggerAnimation(currentEnemyVisual.animator, enemyStats.hitFlashTrigger);
     }
     
     public void TriggerEnemyAttack(EnemyStats enemyStats)
     {
-        if (enemyStats == null) return;
-        TriggerAnimation(enemyAnimator, enemyStats.attackTrigger);
+        if (enemyStats == null || currentEnemyVisual == null) return;
+        TriggerAnimation(currentEnemyVisual.animator, enemyStats.attackTrigger);
     }
     
     public void TriggerPlayerHitFlash()
@@ -450,10 +465,30 @@ public class UIBattleManager : MonoBehaviour
     {
         if (animator == null || string.IsNullOrEmpty(triggerName)) 
         {
-            Debug.LogWarning($"Cannot trigger animation: animator={animator}, triggerName='{triggerName}'");
             return;
         }
+        
+        // Check if the animator has the trigger
+        if (!HasTrigger(animator, triggerName))
+        {
+            return;
+        }
+        
         animator.SetTrigger(triggerName);
+    }
+    
+    private bool HasTrigger(Animator animator, string triggerName)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null) return false;
+        
+        foreach (var parameter in animator.parameters)
+        {
+            if (parameter.name == triggerName && parameter.type == AnimatorControllerParameterType.Trigger)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
     private void SetButtonState(Animator animator, string state)
@@ -575,6 +610,109 @@ public class UIBattleManager : MonoBehaviour
         if (leftSideBar != null && maxHP > 0)
         {
             leftSideBar.value = (float)currentHP / maxHP;
+        }
+    }
+    
+    // StageController support methods
+    public IEnumerator StartBattle(EnemyStats enemyData, int stageLevel)
+    {
+        PlayerDefeated = false;
+        battleInProgress = true;
+        
+        // Create a runtime enemy instance
+        currentEnemyInstance = new RuntimeEnemy(enemyData, stageLevel);
+        
+        // Set up visuals and stats
+        yield return StartCoroutine(SetupEnemyUI(currentEnemyInstance));
+        
+        // Update BattleManager with the new enemy data
+        if (battleManager != null)
+        {
+            battleManager.SetRuntimeEnemy(currentEnemyInstance);
+        }
+        
+        // Start the battle sequence
+        StartBattleSequence(enemyData);
+        
+        // Wait until battle ends
+        yield return StartCoroutine(BattleLoop());
+        
+        battleInProgress = false;
+    }
+    
+    IEnumerator SetupEnemyUI(RuntimeEnemy enemy)
+    {
+        // Clear any existing enemy
+        ClearEnemySprite();
+        
+        // Create new enemy from prefab
+        CreateEnemyObject(enemy);
+        
+        // Wait one frame for Unity to properly initialize the prefab
+        yield return null;
+    }
+    
+    void CreateEnemyObject(RuntimeEnemy enemy)
+    {
+        if (enemyPrefab == null)
+        {
+            Debug.LogError("Enemy prefab not assigned!");
+            return;
+        }
+
+        // Instantiate prefab
+        currentEnemyObject = Instantiate(enemyPrefab, enemySpawnPoint.position, enemySpawnPoint.rotation);
+        currentEnemyVisual = currentEnemyObject.GetComponent<EnemyVisual>();
+        
+        if (currentEnemyVisual == null)
+        {
+            Debug.LogError("EnemyVisual component not found on prefab!");
+            return;
+        }
+
+        // Setup the enemy using the EnemyVisual component
+        currentEnemyVisual.SetupEnemy(enemy.data);
+    }
+    
+    
+    IEnumerator BattleLoop()
+    {
+        // Wait until battle ends (enemy defeated or player defeated)
+        while (!currentEnemyInstance.IsDefeated() && !PlayerDefeated && battleInProgress)
+        {
+            yield return null; // Wait one frame
+        }
+        
+        yield break;
+    }
+    
+    public void OnPlayerDeath()
+    {
+        PlayerDefeated = true;
+    }
+    
+    public void OnEnemyDefeated()
+    {
+        // Battle loop will end automatically when IsDefeated() returns true
+    }
+    
+    public void ClearEnemySprite()
+    {
+        if (currentEnemyObject != null)
+        {
+            Destroy(currentEnemyObject);
+            currentEnemyObject = null;
+            currentEnemyVisual = null;
+        }
+    }
+    
+    IEnumerator TriggerHitflashDelayed(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        if (currentEnemyVisual != null && currentEnemyInstance != null)
+        {
+            TriggerAnimation(currentEnemyVisual.animator, currentEnemyInstance.data.hitFlashTrigger);
         }
     }
 }

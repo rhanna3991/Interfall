@@ -16,6 +16,17 @@ public class EnemyStats : ScriptableObject
     public string enemyName;
     public Sprite enemySprite;
     public string battleStartMessage = "dares to challenge you!";
+    public string description; // Optional flavor text
+    
+    [Header("Stage Tier")]
+    [Range(1, 10)] public int stageTier = 1; // How late in the run it appears
+    
+    [Header("Visual Settings")]
+    public Vector3 scale = Vector3.one; // Enemy size multiplier
+    
+    [Header("Collider Settings")]
+    public float colliderSizeMultiplier = 1.0f; // Collider size multiplier
+    public Vector2 colliderOffset = Vector2.zero; // Collider position offset
 
     [Header("Base Stats")]
     public int baseMaxHP = 100;
@@ -33,6 +44,9 @@ public class EnemyStats : ScriptableObject
     public string hitFlashTrigger = "HitFlash";
     public string deathTrigger = "EnemyDeath";
     public float attackAnimationDuration = 1.0f;
+    
+    [Header("Animator Controller")]
+    public RuntimeAnimatorController animatorController;
 
 }
 
