@@ -245,6 +245,12 @@ public class BattleManager : MonoBehaviour
         }
     }
     
+    // Method to get the current enemy's defense (for ability calculations)
+    public int GetEnemyDefense()
+    {
+        return currentRuntimeEnemy != null ? currentRuntimeEnemy.GetDefense() : enemyStats.baseDefense;
+    }
+    
     
     // Method to switch between party members
     public void SetCurrentPartyMember(int index)

@@ -376,10 +376,17 @@ public class UIBattleManager : MonoBehaviour
     // Method to show victory dialogue when enemy is defeated
     public void ShowVictoryDialogue(string enemyName, int expGained)
     {
-        if (!ValidateDialogueSystem()) return;
+        Debug.Log($"[UI BATTLE MANAGER] ShowVictoryDialogue() called for enemy: {enemyName}, EXP: {expGained}");
+        
+        if (!ValidateDialogueSystem()) 
+        {
+            Debug.LogError("[UI BATTLE MANAGER] ValidateDialogueSystem() returned false - dialogue system not available!");
+            return;
+        }
         
         // Set flag to prevent battle from ending immediately
         victoryDialogueInProgress = true;
+        Debug.Log("[VICTORY] Showing victory dialogue");
         
         // Disable buttons and hide player card during dialogue
         SetButtonsInteractable(false);
@@ -401,6 +408,7 @@ public class UIBattleManager : MonoBehaviour
             victoryDialogueInProgress = false;
             
             // Now that victory dialogue is complete, trigger battle end
+            Debug.Log("[VICTORY] Victory dialogue complete");
             OnEnemyDefeated();
         };
         
@@ -713,18 +721,9 @@ public class UIBattleManager : MonoBehaviour
     IEnumerator BattleLoop()
     {
         // Don't end battle if victory dialogue is still showing
-        while (!currentEnemyInstance.IsDefeated() && !PlayerDefeated && battleInProgress)
+        while ((!currentEnemyInstance.IsDefeated() && !PlayerDefeated && battleInProgress) || victoryDialogueInProgress)
         {
             yield return null; // Wait one frame
-        }
-        
-        // If enemy is defeated but victory dialogue is showing, wait for it to complete
-        if (currentEnemyInstance.IsDefeated() && victoryDialogueInProgress)
-        {
-            while (victoryDialogueInProgress && battleInProgress)
-            {
-                yield return null; // Wait for victory dialogue to complete
-            }
         }
         
         yield break;
@@ -737,6 +736,12 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnEnemyDefeated()
     {
+        // Ensure UI returns to default menu state when battle ends
+        if (transitionUI != null)
+        {
+            transitionUI.StartDefaultMenuTransition();
+        }
+        
         // Battle loop will end automatically when IsDefeated() returns true
     }
     

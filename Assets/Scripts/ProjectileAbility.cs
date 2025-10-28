@@ -16,9 +16,10 @@ public class ProjectileAbility : Ability
             return;
         }
 
-        // Calculate damage
-        int damage = Mathf.Max(1,
-            caster.GetStatAtLevel(StatType.SpecialAttack, battleManager.playerLevel) - target.baseDefense);
+        // Calculate damage using proper defense scaling
+        int playerSpecialAttack = caster.GetStatAtLevel(StatType.SpecialAttack, battleManager.playerLevel);
+        int enemyDefense = battleManager.GetEnemyDefense();
+        int damage = Mathf.Max(1, playerSpecialAttack - enemyDefense);
 
         // Use the scene's spawn point
         Transform spawnPoint = battleManager.playerProjectileSpawn != null

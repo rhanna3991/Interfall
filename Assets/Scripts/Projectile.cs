@@ -36,10 +36,17 @@ public class Projectile : MonoBehaviour
                     uiBattleManager.PlayEnemyHitflash(battleManager.enemyStats);
                 }
                 
+                // Store enemy HP before damage to check if enemy will be defeated
+                int enemyHPBeforeDamage = battleManager.enemyCurrentHP;
+                
                 battleManager.ApplyDamageToEnemy(damage);
                 
-                // Show custom dialogue with ability name
-                battleManager.ShowCustomDamageDialogue(damage, abilityName);
+                // Only show magic damage dialogue if enemy is NOT defeated
+                // If enemy is defeated, victory dialogue will be shown instead
+                if (battleManager.enemyCurrentHP > 0)
+                {
+                    battleManager.ShowCustomDamageDialogue(damage, abilityName);
+                }
             }
             
             // Destroy the projectile
