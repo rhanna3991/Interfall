@@ -21,8 +21,8 @@ MonoBehaviour:
   colliderSizeMultiplier: 0.5
   colliderOffset: {x: 0, y: 0}
   baseMaxHP: 5
-  baseAttack: 150
-  baseDefense: 1
+  baseAttack: 15
+  baseDefense: 5
   baseSpeed: 10
   baseSpecialAttack: 10
   expGiven: 25
