@@ -199,17 +199,101 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnFleeButton()
     {
+        // Prevent spam clicking
+        if (isAnyActionInProgress)
+        {
+            Debug.Log("Flee button clicked but action already in progress");
+            return;
+        }
+        
         // Play button click sound
         AudioManager.Instance?.PlayButtonClick();
+        
+        isAnyActionInProgress = true;
+        SetButtonsInteractable(false);
         
         StartCoroutine(PlayButtonAnimationThenExecute(
             fleeVisualAnimator, 
             defaultButtonAnimationDuration,
             () => { 
-                // TODO: Implement flee system
-                Debug.Log("Flee button clicked - not implemented yet");
+                StartCoroutine(HandleFleeAttempt());
             }
         ));
+    }
+    
+    private IEnumerator HandleFleeAttempt()
+    {
+        // Calculate flee success based on player's flee chance
+        bool fleeSuccessful = UnityEngine.Random.value > 0.5f;
+        
+        if (fleeSuccessful)
+        {
+            // Show success dialogue
+            yield return StartCoroutine(ShowFleeSuccessDialogue());
+            
+            // Mark battle as ending (don't show victory dialogue)
+            battleInProgress = false;
+            
+            // End stage and transition
+            yield return StartCoroutine(StageTransitionSequence());
+        }
+        else
+        {
+            // Show failure dialogue
+            yield return StartCoroutine(ShowFleeFailureDialogue());
+            
+            // Re-enable player card before enemy attack sequence
+            SetActiveSafe(playerCard, true);
+            
+            // Enemy attacks (skip player turn)
+            SetActiveSafe(battleOptions, false);
+            TriggerAnimation(playerAttackedAnimator, ANIM_PLAYER_ATTACKED);
+            yield return StartCoroutine(TriggerEnemyAttackAfterDelay(battleManager?.enemyStats));
+        }
+        
+        isAnyActionInProgress = false;
+    }
+    
+    private IEnumerator ShowFleeSuccessDialogue()
+    {
+        if (!ValidateDialogueSystem()) yield break;
+        
+        SetActiveSafe(playerCard, false);
+        SetActiveSafe(battleBoxDialogue, true);
+        
+        dialogueScript.SetDialogueLines(new[] { "You successfully fled from battle!" });
+        
+        bool dialogueComplete = false;
+        dialogueScript.OnDialogueComplete = () => {
+            SetActiveSafe(battleBoxDialogue, false);
+            dialogueComplete = true;
+        };
+        
+        dialogueScript.StartQuickDialogue();
+        
+        // Wait for dialogue to complete
+        yield return new WaitUntil(() => dialogueComplete);
+    }
+    
+    private IEnumerator ShowFleeFailureDialogue()
+    {
+        if (!ValidateDialogueSystem()) yield break;
+        
+        SetActiveSafe(playerCard, false);
+        SetActiveSafe(battleBoxDialogue, true);
+        
+        dialogueScript.SetDialogueLines(new[] { "You couldn't escape!" });
+        
+        bool dialogueComplete = false;
+        dialogueScript.OnDialogueComplete = () => {
+            SetActiveSafe(battleBoxDialogue, false);
+            dialogueComplete = true;
+        };
+        
+        dialogueScript.StartQuickDialogue();
+        
+        // Wait for dialogue to complete
+        yield return new WaitUntil(() => dialogueComplete);
     }
     
     // Play button animation then execute callback
