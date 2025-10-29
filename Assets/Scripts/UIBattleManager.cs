@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class UIBattleManager : MonoBehaviour
@@ -139,6 +140,9 @@ public class UIBattleManager : MonoBehaviour
             return;
         }
         
+        // Play button click sound
+        AudioManager.Instance?.PlayButtonClick();
+        
         // Mark attack as in progress
         isAttackInProgress = true;
         isAnyActionInProgress = true;
@@ -159,6 +163,9 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnMagicButton()
     {
+        // Play button click sound
+        AudioManager.Instance?.PlayButtonClick();
+        
         StartCoroutine(PlayButtonAnimationThenExecute(
             magicVisualAnimator, 
             magicButtonAnimationDuration,
@@ -177,6 +184,9 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnItemsButton()
     {
+        // Play button click sound
+        AudioManager.Instance?.PlayButtonClick();
+        
         StartCoroutine(PlayButtonAnimationThenExecute(
             itemsVisualAnimator, 
             defaultButtonAnimationDuration,
@@ -189,6 +199,9 @@ public class UIBattleManager : MonoBehaviour
     
     public void OnFleeButton()
     {
+        // Play button click sound
+        AudioManager.Instance?.PlayButtonClick();
+        
         StartCoroutine(PlayButtonAnimationThenExecute(
             fleeVisualAnimator, 
             defaultButtonAnimationDuration,
@@ -222,14 +235,30 @@ public class UIBattleManager : MonoBehaviour
     }
     
     // Button hover events
-    public void OnAttackButtonHoverEnter() => SetButtonState(attackVisualAnimator, ANIM_HIGHLIGHTED);
+    public void OnAttackButtonHoverEnter() 
+    { 
+        AudioManager.Instance?.PlayButtonHover();
+        SetButtonState(attackVisualAnimator, ANIM_HIGHLIGHTED); 
+    }
     public void OnAttackButtonHoverExit() => SetButtonState(attackVisualAnimator, ANIM_NORMAL);
-    public void OnMagicButtonHoverEnter() => SetButtonState(magicVisualAnimator, ANIM_HIGHLIGHTED);
+    public void OnMagicButtonHoverEnter() 
+    { 
+        AudioManager.Instance?.PlayButtonHover();
+        SetButtonState(magicVisualAnimator, ANIM_HIGHLIGHTED); 
+    }
     public void OnMagicButtonHoverExit() => SetButtonState(magicVisualAnimator, ANIM_NORMAL);
     
-    public void OnItemsButtonHoverEnter() => SetButtonState(itemsVisualAnimator, ANIM_HIGHLIGHTED);
+    public void OnItemsButtonHoverEnter() 
+    { 
+        AudioManager.Instance?.PlayButtonHover();
+        SetButtonState(itemsVisualAnimator, ANIM_HIGHLIGHTED); 
+    }
     public void OnItemsButtonHoverExit() => SetButtonState(itemsVisualAnimator, ANIM_NORMAL);
-    public void OnFleeButtonHoverEnter() => SetButtonState(fleeVisualAnimator, ANIM_HIGHLIGHTED);
+    public void OnFleeButtonHoverEnter() 
+    { 
+        AudioManager.Instance?.PlayButtonHover();
+        SetButtonState(fleeVisualAnimator, ANIM_HIGHLIGHTED); 
+    }
     public void OnFleeButtonHoverExit() => SetButtonState(fleeVisualAnimator, ANIM_NORMAL);
     
     public void UpdateBattleUI(int damage, CharacterStats playerStats, EnemyStats enemyStats)
@@ -327,15 +356,29 @@ public class UIBattleManager : MonoBehaviour
         dialogueScript.OnDialogueComplete = () => {
             SetActiveSafe(battleBoxDialogue, false);
             
-            // Restore battle UI elements
-            SetButtonsInteractable(true);
-            SetActiveSafe(playerCard, true);
-            SetActiveSafe(battleOptions, true);
-            
-            // Return to default menu after enemy damage sequence
-            if (transitionUI != null)
+            // Check if player died from this damage
+            if (battleManager != null && battleManager.playerCurrentHP <= 0)
             {
-                transitionUI.StartDefaultMenuTransition();
+                // Player died - disable all UI and start game over
+                SetButtonsInteractable(false);
+                SetActiveSafe(playerCard, false);
+                SetActiveSafe(battleOptions, false);
+                
+                // Start game over sequence
+                StartCoroutine(GameOverSequence());
+            }
+            else
+            {
+                // Player survived - restore battle UI elements
+                SetButtonsInteractable(true);
+                SetActiveSafe(playerCard, true);
+                SetActiveSafe(battleOptions, true);
+                
+                // Return to default menu after enemy damage sequence
+                if (transitionUI != null)
+                {
+                    transitionUI.StartDefaultMenuTransition();
+                }
             }
         };
         
@@ -413,6 +456,9 @@ public class UIBattleManager : MonoBehaviour
     
     private IEnumerator CompleteDefeatSequence()
     {
+        // Play enemy death sound
+        AudioManager.Instance?.PlayEnemyDeath();
+        
         // Trigger enemy death animation
         if (currentEnemyVisual != null && currentEnemyInstance != null)
         {
@@ -453,6 +499,9 @@ public class UIBattleManager : MonoBehaviour
         // Check if we have slash animators and current index is valid
         if (!IsValidSlashIndex(currentPartyMemberIndex)) return;
         
+        // Play slash attack sound
+        AudioManager.Instance?.PlaySlashAttack();
+        
         var slashObject = slashGameObjects[currentPartyMemberIndex];
         var slashAnimator = slashAnimators[currentPartyMemberIndex];
         
@@ -473,6 +522,10 @@ public class UIBattleManager : MonoBehaviour
     public void PlayEnemyHitflash(EnemyStats enemyStats)
     {
         if (enemyStats == null || currentEnemyVisual == null) return;
+        
+        // Play enemy cry sound when hit
+        AudioManager.Instance?.PlayEnemyCry();
+        
         TriggerAnimation(currentEnemyVisual.animator, enemyStats.hitFlashTrigger);
     }
     
@@ -484,6 +537,9 @@ public class UIBattleManager : MonoBehaviour
     
     public void TriggerPlayerHitFlash()
     {
+        // Play player hit sound
+        AudioManager.Instance?.PlayPlayerHit();
+        
         TriggerAnimation(playerIconAnimator, ANIM_HIT_FLASH);
     }
     
@@ -769,12 +825,58 @@ public class UIBattleManager : MonoBehaviour
     public void OnPlayerDeath()
     {
         PlayerDefeated = true;
+        
+        // UI disabling is now handled in ShowEnemyDamageDialogue callback
+        // Start game over sequence
+        StartCoroutine(GameOverSequence());
     }
     
     public void OnEnemyDefeated()
     {
         // Battle loop will end automatically when IsDefeated() returns true
         // All defeat sequence logic is now handled in CompleteDefeatSequence()
+    }
+    
+    private IEnumerator GameOverSequence()
+    {
+        // Play game over sound
+        AudioManager.Instance?.PlayGameOver();
+        
+        // Show game over dialogue
+        if (ValidateDialogueSystem())
+        {
+            SetActiveSafe(battleBoxDialogue, true);
+            dialogueScript.SetDialogueLines(new[] { "Game Over! You have been defeated..." });
+            
+            // Wait for player to acknowledge game over
+            dialogueScript.OnDialogueComplete = () => {
+                SetActiveSafe(battleBoxDialogue, false);
+                StartCoroutine(FadeToMainMenu());
+            };
+            
+            dialogueScript.StartQuickDialogue();
+        }
+        else
+        {
+            // Fallback if dialogue system isn't available
+            yield return new WaitForSeconds(2f);
+            StartCoroutine(FadeToMainMenu());
+        }
+    }
+    
+    private IEnumerator FadeToMainMenu()
+    {
+        // Trigger fade out animation
+        if (battleTransitionAnimator != null)
+        {
+            TriggerAnimation(battleTransitionAnimator, "FadeExit");
+            
+            // Wait for fade animation to complete
+            yield return new WaitForSeconds(1.5f);
+        }
+        
+        // Load main menu scene
+        SceneManager.LoadScene(0); // Assuming main menu is scene 0
     }
     
     private IEnumerator StageTransitionSequence()
@@ -822,7 +924,8 @@ public class UIBattleManager : MonoBehaviour
         
         if (currentEnemyVisual != null && currentEnemyInstance != null)
         {
-            TriggerAnimation(currentEnemyVisual.animator, currentEnemyInstance.data.hitFlashTrigger);
+            // Use PlayEnemyHitflash to ensure enemy cry sound plays
+            PlayEnemyHitflash(currentEnemyInstance.data);
         }
     }
 }

@@ -7,6 +7,9 @@ public class MainMenuController : MonoBehaviour
 {
     public void Play()
     {
+        // Play button click sound
+        AudioManager.Instance?.PlayButtonClick();
+        
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
